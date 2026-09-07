@@ -18,7 +18,7 @@ struct ScreenshotCaptureSettings: View {
     private var clipboardShortcutEnabled = false
     @AppStorage(DefaultsKey.screenshotScrollingAutoScroll) private var autoScroll = false
     @AppStorage(DefaultsKey.screenshotFreeze) private var freeze = true
-    @AppStorage(DefaultsKey.screenshotHideVorssaintWindows) private var hideVorssaintWindows = true
+    @AppStorage(DefaultsKey.screenshotHideVitalsWindows) private var hideVitalsWindows = true
     @AppStorage(DefaultsKey.screenshotSaveFolder) private var saveFolder = ""
     @AppStorage(DefaultsKey.screenshotSaveSubfolder) private var saveSubfolder = ""
     @AppStorage(DefaultsKey.screenshotFileNamePattern) private var fileNamePattern = ""
@@ -137,7 +137,7 @@ struct ScreenshotCaptureSettings: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                Toggle(strings.hideVorssaintWindowsToggle, isOn: $hideVorssaintWindows)
+                Toggle(strings.hideVitalsWindowsToggle, isOn: $hideVitalsWindows)
                 Picker(strings.delayLabel, selection: $delay) {
                     ForEach(ScreenshotSupport.allowedDelays, id: \.self) { seconds in
                         if seconds == 0 {

@@ -201,14 +201,6 @@ struct UpdateSupportIntroView: View {
 private struct UpdateSupportContent: View {
     @ObservedObject private var l10n = L10n.shared
     @Environment(\.openURL) private var openURL
-    @Environment(\.colorScheme) private var colorScheme
-
-    private var donateThanksText: String {
-        let thanks = l10n.s.donateThanks
-        return colorScheme == .dark
-            ? thanks.replacingOccurrences(of: "🖤", with: "🤍")
-            : thanks
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -228,37 +220,22 @@ private struct UpdateSupportContent: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            Text(l10n.s.supportIntroMessage)
+            // The "buy me a coffee" button (and the message and thank-you line
+            // that asked for donations) that used to sit here are removed: they
+            // pointed at the upstream maintainer's donation page, and donations
+            // meant for this fork must not land there.
+            Text(l10n.s.supportIntroStarMessage)
                 .font(.system(size: 13.5))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            VStack(alignment: .leading, spacing: 12) {
-                Button {
-                    openURL(AppInfo.coffeeURL)
-                } label: {
-                    Label(l10n.s.supportIntroCoffeeButton,
-                          systemImage: "cup.and.saucer.fill")
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-
-                Button {
-                    openURL(AppInfo.repositoryURL)
-                } label: {
-                    Label(l10n.s.supportIntroStarHint, systemImage: "star")
-                        .font(.caption)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-                .help(l10n.s.supportIntroStarButton)
-                .accessibilityLabel(l10n.s.supportIntroStarButton)
+            Button {
+                openURL(AppInfo.repositoryURL)
+            } label: {
+                Label(l10n.s.supportIntroStarButton, systemImage: "star.fill")
             }
-
-            Text(donateThanksText)
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

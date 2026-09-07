@@ -45,7 +45,7 @@ enum UninstallerSupport {
         case sharedIdentifier
         /// Shipped inside another app, which needs it.
         case insideAnotherApp
-        /// Vorssaint itself, which removes itself from Advanced settings.
+        /// Vitals itself, which removes itself from Advanced settings.
         case thisApp
         /// A link to an app kept somewhere else, never its destination.
         case link
@@ -899,10 +899,10 @@ enum UninstallerSupport {
         }
     }
 
-    /// Vorssaint's own identifiers, among the protected ones.
+    /// Vitals's own identifiers, among the protected ones.
     private static func isOwnBundleID(_ id: String) -> Bool {
         let lowered = id.lowercased()
-        return lowered == "com.vorssaint" || lowered.hasPrefix("com.vorssaint.")
+        return lowered == "com.rishabhraaj17.vitals" || lowered.hasPrefix("com.rishabhraaj17.vitals.")
             || lowered.hasPrefix("vorss.")
     }
 

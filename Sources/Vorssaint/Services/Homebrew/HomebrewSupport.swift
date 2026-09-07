@@ -365,7 +365,7 @@ enum HomebrewTerminalScript {
     static func write(command: String,
                       shellPath: String = HomebrewCommandBuilder.currentShellPath,
                       directory: URL = FileManager.default.temporaryDirectory) throws -> URL {
-        let url = directory.appendingPathComponent("vorssaint-homebrew-\(UUID().uuidString)")
+        let url = directory.appendingPathComponent("vitals-homebrew-\(UUID().uuidString)")
         let data = Data(contents(command: command, shellPath: shellPath).utf8)
         guard FileManager.default.createFile(atPath: url.path, contents: data,
                                              attributes: [.posixPermissions: 0o700]) else {

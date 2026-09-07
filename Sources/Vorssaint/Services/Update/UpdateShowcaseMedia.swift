@@ -6,7 +6,7 @@ import Foundation
 
 enum UpdateShowcaseInfo {
     static let releaseVersion = "3.1.4"
-    static let mediaAssetName = "vorssaint-3.1.4-showcase-1.mp4"
+    static let mediaAssetName = "vitals-3.1.4-showcase-1.mp4"
     static let mediaSHA256 = "88031b2b48708b8eb96248fef1143432a0600382b59ad5ea39e0746af27ab9e8"
 
     /// This fork hosts no showcase media and must not fetch upstream's: that
@@ -29,7 +29,7 @@ enum UpdateShowcaseInfo {
     static var cacheDirectory: URL {
         let base = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
             ?? FileManager.default.temporaryDirectory
-        let bundleID = Bundle.main.bundleIdentifier ?? "com.vorssaint.utils"
+        let bundleID = Bundle.main.bundleIdentifier ?? "com.rishabhraaj17.vitals"
         return base
             .appendingPathComponent(bundleID, isDirectory: true)
             .appendingPathComponent("UpdateShowcase", isDirectory: true)

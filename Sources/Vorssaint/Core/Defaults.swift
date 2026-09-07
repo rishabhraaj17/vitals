@@ -275,7 +275,7 @@ enum DefaultsKey {
     static let startupDidNotFinish = "startupDidNotFinish"
     static let bluetoothSleepEnabled = "bluetoothSleepEnabled"
     static let bluetoothSleepRestoreOnWake = "bluetoothSleepRestoreOnWake"
-    // Set only while Vorssaint owes a Bluetooth restore, so a Mac shut down
+    // Set only while Vitals owes a Bluetooth restore, so a Mac shut down
     // while asleep still gets it back on the next launch.
     static let bluetoothSleepRestorePending = "bluetoothSleepRestorePending"
     static let musicBlockEnabled = "musicBlockEnabled"
@@ -710,7 +710,7 @@ enum DefaultsKey {
     static let screenshotClipboardShortcutEnabled = "screenshotClipboardShortcutEnabled"
     static let screenshotClipboardShortcut = "screenshotClipboardShortcut"
     static let screenshotFreeze = "screenshotFreeze"
-    static let screenshotHideVorssaintWindows = "screenshotHideVorssaintWindows"
+    static let screenshotHideVitalsWindows = "screenshotHideVitalsWindows"
     static let screenshotSaveFolder = "screenshotSaveFolder"
     static let screenshotSaveSubfolder = "screenshotSaveSubfolder"
     static let screenshotFileNamePattern = "screenshotFileNamePattern"
@@ -1125,7 +1125,7 @@ enum KeepAwakeIconTint: String, CaseIterable, Identifiable {
 }
 
 enum KeepAwakeActiveIcon: String, CaseIterable, Identifiable {
-    case vorssaint, coffee, eye, moon, light
+    case vitals, coffee, eye, moon, light
 
     var id: String { rawValue }
 
@@ -1137,7 +1137,7 @@ enum KeepAwakeActiveIcon: String, CaseIterable, Identifiable {
 
     var systemSymbolName: String? {
         switch self {
-        case .vorssaint: return nil
+        case .vitals: return nil
         case .coffee: return "cup.and.saucer.fill"
         case .eye: return "eye.fill"
         case .moon: return "moon.fill"
@@ -1152,13 +1152,13 @@ enum KeepAwakeActiveIcon: String, CaseIterable, Identifiable {
         switch self {
         case .coffee: return 1
         case .light: return 0.5
-        case .vorssaint, .eye, .moon: return 0
+        case .vitals, .eye, .moon: return 0
         }
     }
 
     func title(_ strings: Strings) -> String {
         switch self {
-        case .vorssaint: return strings.keepAwakeActiveIconVorssaint
+        case .vitals: return strings.keepAwakeActiveIconVitals
         case .coffee: return strings.keepAwakeActiveIconCoffee
         case .eye: return strings.keepAwakeActiveIconEye
         case .moon: return strings.keepAwakeActiveIconMoon
@@ -1264,7 +1264,7 @@ enum Defaults {
         DefaultsKey.launchAtLoginWanted: false,
         DefaultsKey.keepAwakeShortcut: "control+option+command:40",
         DefaultsKey.keepAwakeIconTint: KeepAwakeIconTint.orange.rawValue,
-        DefaultsKey.keepAwakeActiveIcon: KeepAwakeActiveIcon.vorssaint.rawValue,
+        DefaultsKey.keepAwakeActiveIcon: KeepAwakeActiveIcon.vitals.rawValue,
         DefaultsKey.showCountdown: false,
         DefaultsKey.scrollInverterEnabled: false,
         DefaultsKey.scrollInverterHorizontalEnabled: false,
@@ -1949,7 +1949,7 @@ enum Defaults {
         DefaultsKey.screenshotClipboardShortcutEnabled: false,
         DefaultsKey.screenshotClipboardShortcut: GlobalShortcut.screenshotClipboardDefault.storageValue,
         DefaultsKey.screenshotFreeze: true,
-        DefaultsKey.screenshotHideVorssaintWindows: true,
+        DefaultsKey.screenshotHideVitalsWindows: true,
         DefaultsKey.screenshotSaveFolder: "",
         DefaultsKey.screenshotSaveSubfolder: "",
         DefaultsKey.screenshotFileNamePattern: "",
@@ -2546,20 +2546,20 @@ enum Defaults {
     static func sanitizedKeepAwakeActiveIcon(_ rawValue: String?) -> KeepAwakeActiveIcon {
         guard let rawValue,
               let icon = KeepAwakeActiveIcon(rawValue: rawValue) else {
-            return .vorssaint
+            return .vitals
         }
         return icon
     }
 
     /// A typed symbol name without the spaces around it; empty keeps the
-    /// Vorssaint glyph. Whether this Mac has the symbol is left to the menu
+    /// Vitals glyph. Whether this Mac has the symbol is left to the menu
     /// bar drawing, since a backup can carry a name from a newer macOS.
     static func sanitizedMenuBarIconSymbol(_ rawValue: String?) -> String {
         rawValue?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     }
 
     /// What the menu bar icon field saves as it is typed: a name this Mac has
-    /// a symbol for, nothing for the Vorssaint icon, and otherwise the name
+    /// a symbol for, nothing for the Vitals icon, and otherwise the name
     /// the field opened with, so a typo never leaves a valid half behind.
     static func menuBarIconSymbolToSave(typed: String?, opening: String,
                                         exists: (String) -> Bool) -> String {
@@ -2567,7 +2567,7 @@ enum Defaults {
         return name.isEmpty || exists(name) ? name : opening
     }
 
-    /// The symbols the menu bar icon gallery offers after the Vorssaint icon:
+    /// The symbols the menu bar icon gallery offers after the Vitals icon:
     /// solid shapes that still read at menu bar size, all present on macOS 14
     /// (some under older names, which later versions still accept). Keep
     /// Awake's symbols stay out, so an active session still stands out.

@@ -13,12 +13,12 @@ final class ScreenshotAutomaticScroller: ScreenshotScrollingCapture.AutomaticScr
     private let point: CGPoint
     private let step: Int32
 
-    init?(region: RecorderSupport.Region, hideVorssaintWindows: Bool,
+    init?(region: RecorderSupport.Region, hideVitalsWindows: Bool,
           protectedWindowIDs: Set<CGWindowID>) {
         guard let mainHeight = NSScreen.screens.first?.frame.maxY else { return nil }
         let point = CGPoint(x: region.anchorRect.midX, y: mainHeight - region.anchorRect.midY)
         let pickable = ScreenshotCaptureEngine.pickableWindows(
-            hideVorssaintWindows: hideVorssaintWindows, protectedWindowIDs: protectedWindowIDs)
+            hideVitalsWindows: hideVitalsWindows, protectedWindowIDs: protectedWindowIDs)
         guard let id = WindowServerSupport.receivingWindow(at: point),
               region.windowID == nil || region.windowID == id,
               let target = pickable.first(where: { $0.id == id && $0.bounds.contains(point) }),

@@ -24,30 +24,30 @@ sign_installed_bundle() { signed+=("$1"); }
 for DEV in 1 0; do
     stopped=()
     signed=()
-    for name in Vorss 'Vorssaint Utils' Vorssaint 'Vorssaint (Developer)'; do
+    for name in Vorss 'Vorssaint Utils' Vitals 'Vitals (Developer)'; do
         mkdir -p "$install_test_dir/Applications/$name.app"
         print original > "$install_test_dir/Applications/$name.app/content"
     done
     if (( DEV )); then
-        APP_NAME='Vorssaint (Developer)'
-        EXECUTABLE=VorssaintDeveloper
+        APP_NAME='Vitals (Developer)'
+        EXECUTABLE=VitalsDeveloper
     else
-        APP_NAME=Vorssaint
-        EXECUTABLE=Vorssaint
+        APP_NAME=Vitals
+        EXECUTABLE=Vitals
     fi
     source "$install_test_dir/install.zsh"
     [[ "$(cat "$install_test_dir/Applications/$APP_NAME.app/content")" == new ]]
     [[ "${signed[*]}" == "$install_test_dir/Applications/$APP_NAME.app" ]]
     if (( DEV )); then
-        [[ "${stopped[*]}" == VorssaintDeveloper ]]
-        for name in Vorss 'Vorssaint Utils' Vorssaint; do
+        [[ "${stopped[*]}" == VitalsDeveloper ]]
+        for name in Vorss 'Vorssaint Utils' Vitals; do
             [[ "$(cat "$install_test_dir/Applications/$name.app/content")" == original ]]
         done
     else
-        [[ "${stopped[*]}" == 'Vorssaint Vorss VorssaintUtils' ]]
+        [[ "${stopped[*]}" == 'Vitals Vorss VorssaintUtils' ]]
         [[ ! -e "$install_test_dir/Applications/Vorss.app" ]]
         [[ ! -e "$install_test_dir/Applications/Vorssaint Utils.app" ]]
-        [[ "$(cat "$install_test_dir/Applications/Vorssaint (Developer).app/content")" == original ]]
+        [[ "$(cat "$install_test_dir/Applications/Vitals (Developer).app/content")" == original ]]
     fi
 done
 print 'DEVELOPER INSTALL ISOLATION TESTS OK'

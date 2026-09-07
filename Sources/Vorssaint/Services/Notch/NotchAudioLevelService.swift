@@ -213,8 +213,8 @@ private enum NotchAudioLevelListeners {
 /// starting a device can block for as long as a Bluetooth or USB device takes
 /// to reconnect, and the island must never wait on that.
 private final class NotchAudioLevelReader {
-    private let queue = DispatchQueue(label: "com.vorssaint.notch-audio-levels", qos: .utility)
-    private static let teardownQueue = DispatchQueue(label: "com.vorssaint.notch-audio-levels.teardown", qos: .utility)
+    private let queue = DispatchQueue(label: "com.rishabhraaj17.vitals.notch-audio-levels", qos: .utility)
+    private static let teardownQueue = DispatchQueue(label: "com.rishabhraaj17.vitals.notch-audio-levels.teardown", qos: .utility)
     private let pid: pid_t
     private let onLevels: ([Double]) -> Void
     private let onSilence: () -> Void
@@ -292,7 +292,7 @@ private final class NotchAudioLevelReader {
         tapped = objects
         var tapID = AudioObjectID(0)
         guard let uuid = createPrivateAudioTap(.stereoMixdown, processes: objects as [NSNumber], deviceUID: nil,
-                                               name: "Vorssaint Island Levels", muteBehavior: .unmuted, id: &tapID)
+                                               name: "Vitals Island Levels", muteBehavior: .unmuted, id: &tapID)
         else { return false }
         self.tapID = tapID
         tapUID = uuid.uuidString
@@ -330,7 +330,7 @@ private final class NotchAudioLevelReader {
     private func buildPipeline() -> Bool {
         guard aggregateID == 0, tapID != 0, let hostUID = Self.hostDeviceUID() else { return false }
         let aggregate: [String: Any] = [
-            kAudioAggregateDeviceNameKey: "Vorssaint Island Levels",
+            kAudioAggregateDeviceNameKey: "Vitals Island Levels",
             kAudioAggregateDeviceUIDKey: UUID().uuidString,
             kAudioAggregateDeviceIsPrivateKey: true,
             kAudioAggregateDeviceMainSubDeviceKey: hostUID,

@@ -6,7 +6,7 @@ import Combine
 import SwiftUI
 
 extension Notification.Name {
-    static let menuPanelWillShow = Notification.Name("VorssaintMenuPanelWillShow")
+    static let menuPanelWillShow = Notification.Name("VitalsMenuPanelWillShow")
 }
 
 struct MenuPanelFocusRequest: Equatable {
@@ -2721,7 +2721,7 @@ struct KeepAwakeCard: View {
     @AppStorage(DefaultsKey.keepAwakeRunningApps) private var keepAwakeRunningApps = false
     @AppStorage(DefaultsKey.keepAwakePauseWhenLocked) private var keepAwakePauseWhenLocked = false
     @AppStorage(DefaultsKey.keepAwakeIconTint) private var keepAwakeIconTint = KeepAwakeIconTint.orange.rawValue
-    @AppStorage(DefaultsKey.keepAwakeActiveIcon) private var keepAwakeActiveIcon = KeepAwakeActiveIcon.vorssaint.rawValue
+    @AppStorage(DefaultsKey.keepAwakeActiveIcon) private var keepAwakeActiveIcon = KeepAwakeActiveIcon.vitals.rawValue
     @AppStorage(DefaultsKey.keepAwakeMouseJiggleEnabled) private var keepAwakeMouseJiggle = false
     @AppStorage(DefaultsKey.keepAwakeMouseJiggleInterval) private var keepAwakeMouseJiggleInterval = 5
     @State private var optionsExpanded = false

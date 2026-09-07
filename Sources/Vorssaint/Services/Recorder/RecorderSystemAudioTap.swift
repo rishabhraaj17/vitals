@@ -143,18 +143,18 @@ final class RecorderSystemAudioTap: @unchecked Sendable {
     /// Destroying a device or a tap can park inside a broken audio path, so
     /// it never happens on a queue anything waits for. Serial, so the device
     /// that hosts a tap is always gone before the tap itself.
-    private static let teardownQueue = DispatchQueue(label: "com.vorssaint.recorder.systemaudio.teardown",
+    private static let teardownQueue = DispatchQueue(label: "com.rishabhraaj17.vitals.recorder.systemaudio.teardown",
                                                      qos: .utility)
     /// The global listener must not wait behind a device destruction that
     /// can remain stuck for the rest of the session.
-    private static let listenerQueue = DispatchQueue(label: "com.vorssaint.recorder.systemaudio.listeners",
+    private static let listenerQueue = DispatchQueue(label: "com.rishabhraaj17.vitals.recorder.systemaudio.listeners",
                                                      qos: .utility)
 
     /// The tap, or nothing when the audio system refuses one. A `pid` narrows
     /// it to that app's sound.
     static func make(hearing pid: pid_t?) async -> RecorderSystemAudioTap? {
         guard #available(macOS 14.4, *) else { return nil }
-        let queue = DispatchQueue(label: "com.vorssaint.recorder.systemaudio",
+        let queue = DispatchQueue(label: "com.rishabhraaj17.vitals.recorder.systemaudio",
                                   qos: .userInitiated)
         return await withCheckedContinuation { continuation in
             queue.async {
@@ -196,7 +196,7 @@ final class RecorderSystemAudioTap: @unchecked Sendable {
         var tapID = AudioObjectID(0)
         guard let uuid = createPrivateAudioTap(pid == nil ? .stereoGlobalExcluding : .stereoMixdown,
                                                processes: objects as [NSNumber], deviceUID: nil,
-                                               name: "Vorssaint Recorder", muteBehavior: .unmuted, id: &tapID)
+                                               name: "Vitals Recorder", muteBehavior: .unmuted, id: &tapID)
         else { return false }
         self.tapID = tapID
         tapUID = uuid.uuidString
@@ -280,7 +280,7 @@ final class RecorderSystemAudioTap: @unchecked Sendable {
         guard aggregateID == 0, let clock,
               let hostUID = Self.hostDeviceUID() else { return }
         let aggregate: [String: Any] = [
-            kAudioAggregateDeviceNameKey: "Vorssaint Recorder",
+            kAudioAggregateDeviceNameKey: "Vitals Recorder",
             kAudioAggregateDeviceUIDKey: UUID().uuidString,
             kAudioAggregateDeviceIsPrivateKey: true,
             kAudioAggregateDeviceMainSubDeviceKey: hostUID,

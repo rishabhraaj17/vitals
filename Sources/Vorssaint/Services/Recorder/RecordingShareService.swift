@@ -90,6 +90,14 @@ final class RecordingShareService: ObservableObject {
         else { throw RecordingShareError.invalidArtifact }
 
         let serviceEndpoint = endpoint
+        // This fork runs no recording-sharing service of its own and must never
+        // upload to upstream's (screenshots.vorssaint.com is upstream's own paid
+        // infrastructure). Only a Developer build pointed at an explicit,
+        // developer-supplied endpoint can share; falling through to the
+        // production default means "no service is configured" here.
+        guard serviceEndpoint != RecordingSharingSupport.productionEndpoint else {
+            throw RecordingShareError.unavailable
+        }
         guard let url = RecordingSharingSupport.uploadURL(endpoint: serviceEndpoint,
                                                           duration: duration)
         else { throw RecordingShareError.invalidEndpoint }
@@ -161,7 +169,7 @@ final class RecordingShareService: ObservableObject {
     func copy(_ url: URL) -> Bool {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.declareVorssaintSource()
+        pasteboard.declareVitalsSource()
         return pasteboard.setString(url.absoluteString, forType: .string)
     }
 

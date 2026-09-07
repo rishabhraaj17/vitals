@@ -73,7 +73,7 @@ enum ScreenshotScrollingCapture {
 
     static func capture(region: RecorderSupport.Region,
                         includePointer: Bool,
-                        hideVorssaintWindows: Bool,
+                        hideVitalsWindows: Bool,
                         protectedWindowIDs: Set<CGWindowID>,
                         finishSignal: FinishSignal,
                         autoScroll: AutomaticScroller? = nil,
@@ -82,7 +82,7 @@ enum ScreenshotScrollingCapture {
             try Task.checkCancellation()
             guard let source = await ScreenshotCaptureEngine.prepareDisplayRegion(
                 displayID: region.displayID, pixelRect: region.pixelRect,
-                includePointer: includePointer, hideVorssaintWindows: hideVorssaintWindows,
+                includePointer: includePointer, hideVitalsWindows: hideVitalsWindows,
                 protectedWindowIDs: protectedWindowIDs),
                   let firstFrame = await source.image(),
                   await autoScroll?.isCurrent() != false,

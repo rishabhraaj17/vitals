@@ -59,6 +59,7 @@ enum CleanerSupport {
         let lowered = id.lowercased()
         let wrapped = "." + lowered + "."
         if wrapped.contains(".com.apple.") || wrapped.contains(".com.vorssaint.")
+            || wrapped.contains(".com.rishabhraaj17.")
             || wrapped.contains(".developer.apple.") || wrapped.contains(".is.workflow.") {
             return true
         }

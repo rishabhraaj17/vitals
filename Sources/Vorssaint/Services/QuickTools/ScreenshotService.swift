@@ -46,8 +46,8 @@ final class ScreenshotService: ObservableObject {
     private var scrollingFinishSignal: ScreenshotScrollingCapture.FinishSignal?
     private let scrollingRegionGuide = CaptureRegionGuide()
 
-    private var hideVorssaintWindows: Bool {
-        UserDefaults.standard.bool(forKey: DefaultsKey.screenshotHideVorssaintWindows)
+    private var hideVitalsWindows: Bool {
+        UserDefaults.standard.bool(forKey: DefaultsKey.screenshotHideVitalsWindows)
     }
 
     /// The surfaces that make up the act of capturing. The quick preview is
@@ -70,7 +70,7 @@ final class ScreenshotService: ObservableObject {
         return ids
     }
 
-    /// Ordinary windows somebody left on screen, which the "Hide Vorssaint
+    /// Ordinary windows somebody left on screen, which the "Hide Vitals
     /// windows" preference owns.
     private var contentWindowIDs: Set<CGWindowID> {
         var ids: Set<CGWindowID> = []
@@ -266,13 +266,13 @@ final class ScreenshotService: ObservableObject {
         let scale = screen.backingScaleFactor
         let frame = screen.frame
         let includePointer = UserDefaults.standard.bool(forKey: DefaultsKey.screenshotIncludePointer)
-        let hideWindows = hideVorssaintWindows
+        let hideWindows = hideVitalsWindows
         let protectedIDs = protectedWindowIDs
         directCaptureTask = Task { @MainActor [weak self] in
             let image = await ScreenshotCaptureEngine.captureDisplay(
                 displayID,
                 includePointer: includePointer,
-                hideVorssaintWindows: hideWindows,
+                hideVitalsWindows: hideWindows,
                 protectedWindowIDs: protectedIDs)
             guard let self, !Task.isCancelled else { return }
             self.directCaptureTask = nil
@@ -294,9 +294,9 @@ final class ScreenshotService: ObservableObject {
             Permissions.shared.requestAccessibility()
             return
         }
-        let hideWindows = hideVorssaintWindows
+        let hideWindows = hideVitalsWindows
         let scroller = automatic ? ScreenshotAutomaticScroller(
-            region: region, hideVorssaintWindows: hideWindows, protectedWindowIDs: protectedWindowIDs) : nil
+            region: region, hideVitalsWindows: hideWindows, protectedWindowIDs: protectedWindowIDs) : nil
         if automatic, scroller == nil {
             QuickToolHUD.show(icon: "rectangle.stack", message: strings.captureFailed)
             return
@@ -321,7 +321,7 @@ final class ScreenshotService: ObservableObject {
             let result = await ScreenshotScrollingCapture.capture(
                 region: region,
                 includePointer: false,
-                hideVorssaintWindows: hideWindows,
+                hideVitalsWindows: hideWindows,
                 protectedWindowIDs: protectedIDs,
                 finishSignal: finishSignal,
                 autoScroll: scroller,
@@ -831,7 +831,7 @@ final class ScreenshotService: ObservableObject {
     }
 
     /// The shelf gets a copy of its own, not the file a Save wrote, which can
-    /// later be deleted or moved to the Trash outside Vorssaint. A saved
+    /// later be deleted or moved to the Trash outside Vitals. A saved
     /// capture lends its bytes and name, so nothing is encoded twice. Any
     /// other is encoded off the main thread. Each capture owns its task so
     /// taking another capture cannot lose one still being prepared. Quiet on
@@ -1108,7 +1108,7 @@ final class ScreenshotService: ObservableObject {
 /// without holding a full-resolution screenshot in memory while the app rests.
 enum ScreenshotLastCaptureStore {
     private static let writeQueue = DispatchQueue(
-        label: "com.vorssaint.utils.latest-screenshot",
+        label: "com.rishabhraaj17.vitals.latest-screenshot",
         qos: .utility)
     private static let stateLock = NSLock()
     private static var generation = 0

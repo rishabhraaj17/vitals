@@ -21,7 +21,7 @@ enum SettingsFileTests {
         }
         let link = root.appendingPathComponent("settings.plist")
         let target = root.appendingPathComponent("repo/settings.plist")
-        func launch(_ arguments: [String] = ["Vorssaint"], bundle: String? = "fixture",
+        func launch(_ arguments: [String] = ["Vitals"], bundle: String? = "fixture",
                     running: Bool = false) -> Set<String> {
             Backup.applyConfigFileAtLaunch(arguments: arguments, bundleID: bundle, url: link,
                                           defaults: defaults, running: { _ in running })
@@ -78,7 +78,7 @@ enum SettingsFileTests {
             defaults.set("light", forKey: DefaultsKey.appearance)
             for flag in ["--export-settings", "--import-settings", "--selftest", "--uninstall",
                          SuperKeyMappingGuard.cleanupArgument, "--mouse-acceleration-cleanup"] {
-                suite.expect(launch(["Vorssaint", flag]).isEmpty, "\(flag) leaves the declarative file alone")
+                suite.expect(launch(["Vitals", flag]).isEmpty, "\(flag) leaves the declarative file alone")
             }
             suite.expect(launch(bundle: nil).isEmpty && launch(running: true).isEmpty
                          && defaults.string(forKey: DefaultsKey.appearance) == "light",

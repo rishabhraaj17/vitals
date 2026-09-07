@@ -77,7 +77,7 @@ final class BrightnessService: ObservableObject {
     /// here (issue #301 kind of reports), so the display pipeline narrates
     /// its decisions to the unified log, where a user can collect them with
     /// one `log show` command after something goes wrong.
-    private static let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "vorssaint",
+    private static let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "vitals",
                                     category: "display")
 
     @Published private(set) var displays: [BrightnessDisplay] = [] {
@@ -205,7 +205,7 @@ final class BrightnessService: ObservableObject {
     private var swallowedKeyCodes = Set<Int>()
     /// Serializes every I2C transaction and rebuild; DDC displays drop
     /// commands that interleave.
-    private let workQueue = DispatchQueue(label: "com.vorssaint.utils.brightness", qos: .userInitiated)
+    private let workQueue = DispatchQueue(label: "com.rishabhraaj17.vitals.brightness", qos: .userInitiated)
     private let stateLock = NSLock()
     private var routes: [CGDirectDisplayID: Route] = [:]
     private struct PendingWrite {
@@ -258,7 +258,7 @@ final class BrightnessService: ObservableObject {
     /// Uptime of the last rescan a volume key started. Main thread only.
     private var lastVolumeKeyRescan: TimeInterval?
     /// The tap is on the main run loop. All HAL reads run off that loop.
-    private let audioOutputQueue = DispatchQueue(label: "com.vorssaint.utils.display-audio")
+    private let audioOutputQueue = DispatchQueue(label: "com.rishabhraaj17.vitals.display-audio")
     private var audioOutputGeneration = 0
     private var selectedAudioOutput: (id: AudioObjectID, name: String)?
     private var audioOutputListener: AudioObjectPropertyListenerBlock?
@@ -1421,7 +1421,7 @@ final class BrightnessService: ObservableObject {
             shouldStopFunctionKeyThread = false
             pendingFunctionKeyRestart = false
             let thread = Thread { [weak self] in self?.runFunctionKeyTap() }
-            thread.name = "Vorssaint Brightness Keys"
+            thread.name = "Vitals Brightness Keys"
             thread.qualityOfService = .userInteractive
             functionKeyThread = thread
             return thread

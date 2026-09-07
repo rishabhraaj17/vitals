@@ -109,7 +109,7 @@ final class ClipboardHistoryService: ObservableObject {
     /// Writes coalesce per mutation cycle; the JSON encode and the disk write
     /// stay off the main thread (a full history of long texts is real work),
     /// serialized so blobs land in mutation order.
-    private static let persistQueue = DispatchQueue(label: "com.vorssaint.utils.clipboard-persist",
+    private static let persistQueue = DispatchQueue(label: "com.rishabhraaj17.vitals.clipboard-persist",
                                                     qos: .utility)
     private var persistScheduled = false
     private var persistenceGeneration = 0
@@ -1314,7 +1314,7 @@ final class ClipboardHistoryService: ObservableObject {
 
     /// The entry is already on the clipboard, so a paste that cannot follow
     /// says so the way Paste as Plain Text does (#186) instead of doing nothing.
-    /// No target means the window opened over Vorssaint itself or an app
+    /// No target means the window opened over Vitals itself or an app
     /// without a Dock icon, where a pick is only a copy and stays silent.
     private func pasteIntoPreviousApp(_ app: NSRunningApplication?) {
         guard let app else { return }
@@ -1797,7 +1797,7 @@ enum ClipboardImageStore {
     /// full size screenshots in memory at once.
     private static let thumbnailQueue: OperationQueue = {
         let queue = OperationQueue()
-        queue.name = "com.vorssaint.utils.clipboard-thumbnails"
+        queue.name = "com.rishabhraaj17.vitals.clipboard-thumbnails"
         queue.maxConcurrentOperationCount = 2
         queue.qualityOfService = .userInitiated
         return queue

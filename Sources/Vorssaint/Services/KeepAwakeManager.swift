@@ -12,7 +12,7 @@ import os
 /// and the battery protection watchdog.
 final class KeepAwakeManager: ObservableObject {
     static let shared = KeepAwakeManager()
-    private static let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "vorssaint",
+    private static let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "vitals",
                                     category: "keep-awake")
 
     enum EndReason { case manual, timer, battery, quit }
@@ -729,7 +729,7 @@ final class KeepAwakeManager: ObservableObject {
             var id = IOPMAssertionID(0)
             let ok = IOPMAssertionCreateWithName("PreventUserIdleSystemSleep" as CFString,
                                                  IOPMAssertionLevel(kIOPMAssertionLevelOn),
-                                                 "Vorssaint: keep the Mac awake" as CFString,
+                                                 "Vitals: keep the Mac awake" as CFString,
                                                  &id)
             if ok == kIOReturnSuccess {
                 systemAssertion = id
@@ -746,7 +746,7 @@ final class KeepAwakeManager: ObservableObject {
             var id = IOPMAssertionID(0)
             let ok = IOPMAssertionCreateWithName("PreventUserIdleDisplaySleep" as CFString,
                                                  IOPMAssertionLevel(kIOPMAssertionLevelOn),
-                                                 "Vorssaint: keep the display on" as CFString,
+                                                 "Vitals: keep the display on" as CFString,
                                                  &id)
             if ok == kIOReturnSuccess {
                 displayAssertion = id

@@ -77,6 +77,14 @@ final class FeedbackService {
     func submit(kind: FeedbackKind,
                 message: String,
                 diagnostics: FeedbackDiagnostics?) async throws {
+        // This fork runs no feedback service of its own and must never send
+        // reports to upstream's (`endpoint` below is upstream's own paid
+        // infrastructure, and feedback about this fork should not land in
+        // their inbox). Submission stays disabled until this fork runs its
+        // own service; the code below is kept only as a record of the wire
+        // format a future self-hosted endpoint would need to accept.
+        throw FeedbackError.unavailable
+
         let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.utf16.count >= 10, trimmed.utf16.count <= 2_000 else {
             throw FeedbackError.rejected

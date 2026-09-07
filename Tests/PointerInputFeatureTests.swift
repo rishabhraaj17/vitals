@@ -488,7 +488,7 @@ enum PointerInputFeatureTests {
                "launch, termination and mounted-volume changes refresh registered web handlers")
         suite.expect(MouseNavigationSupport.shouldRefreshWebHandlers(
             isApplicationActivation: true, activatedPID: 41, ownPID: 41),
-               "activating Vorssaint refreshes registered web handlers")
+               "activating Vitals refreshes registered web handlers")
         suite.expect(!MouseNavigationSupport.shouldRefreshWebHandlers(
             isApplicationActivation: true, activatedPID: 42, ownPID: 41),
                "activating another app does not repeat the handler lookup")
@@ -2605,13 +2605,13 @@ enum PointerInputFeatureTests {
                 ),
                "a stop or replaced event tap invalidates a queued Super key mapping")
         suite.expect(SuperKeyMappingGuard.cleanupSource(in: [
-            "Vorssaint", SuperKeyMappingGuard.cleanupArgument, "capsLock",
+            "Vitals", SuperKeyMappingGuard.cleanupArgument, "capsLock",
         ]) == .capsLock
                 && SuperKeyMappingGuard.cleanupSource(in: [
-                    "Vorssaint", SuperKeyMappingGuard.cleanupArgument, "rightCommand",
+                    "Vitals", SuperKeyMappingGuard.cleanupArgument, "rightCommand",
                 ]) == .rightCommand
                 && SuperKeyMappingGuard.cleanupSource(in: [
-                    "Vorssaint", SuperKeyMappingGuard.cleanupArgument, "invalid",
+                    "Vitals", SuperKeyMappingGuard.cleanupArgument, "invalid",
                 ]) == nil,
                "the crash guard accepts only a real Super key source")
 
@@ -2974,7 +2974,7 @@ enum PointerInputFeatureTests {
         // answers /private/tmp/… for a file the running program answers
         // /tmp/… for. Both ends resolve, so they meet.
         let identityRoot = FileManager.default.temporaryDirectory
-            .appendingPathComponent("vorssaint-identity-\(getpid())", isDirectory: true)
+            .appendingPathComponent("vitals-identity-\(getpid())", isDirectory: true)
         let runtimeBinary = identityRoot.appendingPathComponent("runtime/bin/launcher")
         try? FileManager.default.createDirectory(at: runtimeBinary.deletingLastPathComponent(),
                                                  withIntermediateDirectories: true)
@@ -3057,7 +3057,7 @@ enum PointerInputFeatureTests {
         // has no bundle identifier, while an ordinary .app bundle keeps its
         // bundle row and background/accessory processes stay excluded.
         let runningTestRoot = FileManager.default.temporaryDirectory
-            .appendingPathComponent("vorssaint-running-\(getpid())", isDirectory: true)
+            .appendingPathComponent("vitals-running-\(getpid())", isDirectory: true)
         let runningTargetBinary = runningTestRoot.appendingPathComponent("bin/java")
         let runningSymlinkBinary = runningTestRoot.appendingPathComponent("bin/java_link")
         try? FileManager.default.createDirectory(at: runningTargetBinary.deletingLastPathComponent(),
@@ -3538,7 +3538,7 @@ enum PointerInputFeatureTests {
             // Process 13 stands for the window server, which is no app. This
             // app has an identity, so only the own-window rule keeps it out.
             var owners: [Int32: String] = [11: "com.apple.dock", 5: "com.example.modeler"]
-            owners[ownProcessID] = "com.example.vorssaint"
+            owners[ownProcessID] = "com.example.vitals"
             let identities = owners
             let launchpad = MouseAppExceptionSupport.Window(frame: screen, layer: 27, processID: 11, number: 40)
             let app = MouseAppExceptionSupport.Window(frame: screen, layer: 0, processID: 5, number: 41)
@@ -4054,7 +4054,7 @@ enum PointerInputFeatureTests {
         suite.expect(!QuitProtectionSupport.opensNativeSwitcher(keyCode: 48, flags: .maskCommand, entries: [
                     LiveSystemShortcut(id: 1, shortcut: commandTab, enabled: false),
                 ]),
-               "⌘Tab with the system row off, as the App Switcher's take-over leaves it, opens Vorssaint's switcher only")
+               "⌘Tab with the system row off, as the App Switcher's take-over leaves it, opens Vitals's switcher only")
         suite.expect(QuitProtectionSupport.opensNativeSwitcher(keyCode: 50, flags: .maskCommand, entries: [
                     LiveSystemShortcut(id: 1, shortcut: GlobalShortcut(keyCode: 50, modifiers: [.command]),
                                        enabled: true),

@@ -141,10 +141,10 @@ enum ScreenshotSupport {
     struct UnifiedCapturePolicy: Equatable {
         let freeze: Bool
         let includePointer: Bool
-        let hideVorssaintWindows: Bool
+        let hideVitalsWindows: Bool
         /// Whether editors and pinned captures stay out of the picture and the
         /// pickable windows. Recording keeps them out even while "Hide
-        /// Vorssaint windows" is off, which that flag alone cannot tell apart.
+        /// Vitals windows" is off, which that flag alone cannot tell apart.
         let keepsContentWindowsOut: Bool
         let usesGeometry: Bool
 
@@ -154,7 +154,7 @@ enum ScreenshotSupport {
         func sharesSource(with other: UnifiedCapturePolicy) -> Bool {
             freeze == other.freeze
                 && includePointer == other.includePointer
-                && hideVorssaintWindows == other.hideVorssaintWindows
+                && hideVitalsWindows == other.hideVitalsWindows
                 && keepsContentWindowsOut == other.keepsContentWindowsOut
         }
     }
@@ -162,13 +162,13 @@ enum ScreenshotSupport {
     static func unifiedCapturePolicy(for tool: ScreenCaptureTool,
                                      screenshotFreeze: Bool,
                                      screenshotIncludePointer: Bool,
-                                     screenshotHideVorssaintWindows: Bool)
+                                     screenshotHideVitalsWindows: Bool)
         -> UnifiedCapturePolicy {
         UnifiedCapturePolicy(
             freeze: tool == .scrolling ? false : tool == .screenshot ? screenshotFreeze : true,
             includePointer: tool == .screenshot && screenshotIncludePointer,
-            hideVorssaintWindows: tool != .recording && screenshotHideVorssaintWindows,
-            keepsContentWindowsOut: tool == .recording || screenshotHideVorssaintWindows,
+            hideVitalsWindows: tool != .recording && screenshotHideVitalsWindows,
+            keepsContentWindowsOut: tool == .recording || screenshotHideVitalsWindows,
             usesGeometry: tool == .recording || tool == .scrolling)
     }
 

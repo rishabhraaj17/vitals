@@ -17,9 +17,9 @@ import VideoToolbox
 /// and awaited, so no buffer can still be in flight.
 final class RecorderWriter {
 
-    private static let preparationQueue = DispatchQueue(label: "com.vorssaint.recorder.prepare",
+    private static let preparationQueue = DispatchQueue(label: "com.rishabhraaj17.vitals.recorder.prepare",
                                                          qos: .userInitiated)
-    private static let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "vorssaint",
+    private static let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "vitals",
                                     category: "recorder")
 
     /// Encoder discovery can wait for VideoToolbox. Keep it off the UI thread

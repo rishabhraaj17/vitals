@@ -45,8 +45,12 @@ enum RecordingSharingSupport {
         let audioBitRate: Int
     }
 
+    // Upstream's own paid sharing host. This fork runs no such service and is
+    // not authorized to use upstream's; kept only as the fallback value callers
+    // compare against to detect "no sharing endpoint configured" (see
+    // RecordingShareService.createLink), never dialed directly by this fork.
     static let productionEndpoint = URL(string: "https://screenshots.vorssaint.com")!
-    static let developerBundleIdentifier = "com.vorssaint.utils.dev"
+    static let developerBundleIdentifier = "com.rishabhraaj17.vitals.dev"
     /// Leaves transport headroom below the public 100 MB request ceiling.
     static let maximumUploadBytes = 96_000_000
     static let targetUploadBytes = 90_000_000

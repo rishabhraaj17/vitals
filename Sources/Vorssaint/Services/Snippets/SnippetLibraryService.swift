@@ -8,7 +8,7 @@ import SwiftUI
 /// The snippet library: a small floating panel, summoned by its own global
 /// shortcut, that shows the snippets marked for it grouped by folder. Typing
 /// filters, Enter (or a click) types the snippet into the app that was
-/// active, Esc closes. The panel never activates Vorssaint, so the target
+/// active, Esc closes. The panel never activates Vitals, so the target
 /// app keeps focus the whole time. The hotkey only lives while the library
 /// toggle is on. Requires Accessibility (the synthesized typing).
 final class SnippetLibraryService: ObservableObject {
@@ -153,7 +153,7 @@ final class SnippetLibraryService: ObservableObject {
     func insert(_ snippet: TextSnippet) {
         hide()
         // The panel never activates, so focus normally sits in the target
-        // app. When Vorssaint itself is frontmost (its Settings window, for
+        // app. When Vitals itself is frontmost (its Settings window, for
         // example), the synthetic typing would land in our own fields.
         if NSWorkspace.shared.frontmostApplication?.processIdentifier
             == ProcessInfo.processInfo.processIdentifier {
@@ -231,7 +231,7 @@ final class SnippetLibraryService: ObservableObject {
                                         styleMask: [.borderless, .nonactivatingPanel],
                                         backing: .buffered,
                                         defer: false)
-        panel.title = "Vorssaint"
+        panel.title = "Vitals"
         panel.isReleasedWhenClosed = false
         panel.isMovableByWindowBackground = true
         panel.hidesOnDeactivate = false

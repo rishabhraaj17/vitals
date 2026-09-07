@@ -14,7 +14,7 @@ enum SettingsBackup {
     @discardableResult
     static func runExportPanel() -> Bool? {
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "Vorssaint Settings.plist"
+        panel.nameFieldStringValue = "Vitals Settings.plist"
         panel.allowedContentTypes = [.propertyList]
         panel.canCreateDirectories = true
         NSApp.activate(ignoringOtherApps: true)
@@ -56,7 +56,7 @@ enum SettingsBackup {
                                         withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
             // mkstemp creates a 0600 file on the destination volume before any
             // snippet bytes are written, including in a shared dotfiles folder.
-            var template = Array(directory.appendingPathComponent(".vorssaint-XXXXXX").path.utf8CString)
+            var template = Array(directory.appendingPathComponent(".vitals-XXXXXX").path.utf8CString)
             let descriptor = mkstemp(&template)
             guard descriptor >= 0 else { return false }
             let staged = URL(fileURLWithPath: String(cString: template))
@@ -203,7 +203,7 @@ enum SettingsBackup {
                 failCommand("quit the app before importing settings")
             }
             guard let settings = readSettings(at: URL(fileURLWithPath: path)) else {
-                failCommand("\(path) is not a valid Vorssaint backup")
+                failCommand("\(path) is not a valid Vitals backup")
             }
             Defaults.register()
             apply(settings: settings)

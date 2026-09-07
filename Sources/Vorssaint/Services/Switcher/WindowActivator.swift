@@ -7,7 +7,7 @@ import ApplicationServices
 private let switcherAXPressedNotification = "AXPressed"
 
 /// Shared by the pending writes of one window selection. A later click or
-/// keystroke belongs to the user even when no other Vorssaint activation ran.
+/// keystroke belongs to the user even when no other Vitals activation ran.
 /// The queued work owns this guard; its monitors disappear with the last pass.
 final class SwitcherActivationWriteGuard {
     private let lock = NSLock()
@@ -60,7 +60,7 @@ final class SwitcherActivationWriteGuard {
 enum WindowActivator {
     private static let focusRetryDelay: TimeInterval = 0.12
     private static let fullscreenFocusRetryDelays: [TimeInterval] = [0.18, 0.38, 0.68]
-    fileprivate static let activationAXQueue = DispatchQueue(label: "com.vorssaint.switcher-activation-ax",
+    fileprivate static let activationAXQueue = DispatchQueue(label: "com.rishabhraaj17.vitals.switcher-activation-ax",
                                                                qos: .userInitiated)
     /// Reads of another process run here. A read can wait for the whole
     /// Accessibility timeout of an app that does not answer, and it never
@@ -74,7 +74,7 @@ enum WindowActivator {
     /// a second mechanism. The price is that a stalled read holds up the next
     /// activation's observations, never its first focus.
     fileprivate static let activationObservationQueue = DispatchQueue(
-        label: "com.vorssaint.switcher-activation-observation",
+        label: "com.rishabhraaj17.vitals.switcher-activation-observation",
         qos: .userInitiated)
     private static let activationMainQueue = DispatchQueue.main
     private static var pendingMinimizeRestore: SwitcherWindowMinimizeRestore?
@@ -490,7 +490,7 @@ enum WindowActivator {
     ///
     /// Our own windows are refused rather than special-cased: reading this
     /// process's own Accessibility tree from the main thread is the one call
-    /// that can deadlock, and Vorssaint has no Dock icon to drag a preview
+    /// that can deadlock, and Vitals has no Dock icon to drag a preview
     /// from in the first place.
     @discardableResult
     static func setWindowOrigin(_ origin: CGPoint, windowID: CGWindowID, pid: pid_t) -> Bool {

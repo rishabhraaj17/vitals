@@ -1659,7 +1659,7 @@ final class RecorderEditorController: NSObject, NSWindowDelegate {
             let pasteboard = NSPasteboard.general
             pasteboard.clearContents()
             let published = pasteboard.writeObjects([url as NSURL])
-            if published { pasteboard.declareVorssaintSource() }
+            if published { pasteboard.declareVitalsSource() }
             self.finishClipboardPublication(published, deletesRecording: deletesRecording)
         }
     }

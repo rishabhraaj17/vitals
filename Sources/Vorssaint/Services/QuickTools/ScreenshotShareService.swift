@@ -84,6 +84,14 @@ final class ScreenshotShareService: ObservableObject {
               pngData.starts(with: [137, 80, 78, 71, 13, 10, 26, 10])
         else { throw ScreenshotShareError.invalidImage }
         let serviceEndpoint = endpoint
+        // This fork runs no screenshot-sharing service of its own and must never
+        // upload to upstream's (screenshots.vorssaint.com is upstream's own paid
+        // infrastructure). Only a Developer build pointed at an explicit,
+        // developer-supplied endpoint can share; falling through to the
+        // production default means "no service is configured" here.
+        guard serviceEndpoint != ScreenshotSharingSupport.productionEndpoint else {
+            throw ScreenshotShareError.unavailable
+        }
         guard let url = ScreenshotSharingSupport.uploadURL(endpoint: serviceEndpoint,
                                                            duration: duration)
         else { throw ScreenshotShareError.invalidEndpoint }
@@ -164,7 +172,7 @@ final class ScreenshotShareService: ObservableObject {
     func copy(_ url: URL) -> Bool {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
-        pasteboard.declareVorssaintSource()
+        pasteboard.declareVitalsSource()
         return pasteboard.setString(url.absoluteString, forType: .string)
     }
 

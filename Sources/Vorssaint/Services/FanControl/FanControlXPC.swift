@@ -8,12 +8,22 @@ import CryptoKit
 #endif
 
 enum FanControlIdentifiers {
-    static let teamID = "3D485NHW29"
+    // The root fan-control LaunchDaemon authenticates callers by checking this
+    // Apple Team ID against the caller's code signature (see appCodeRequirement
+    // below). "3D485NHW29" is the UPSTREAM maintainer's Apple Developer Program
+    // team id; this fork has no Apple Developer Program membership and is
+    // self-signed, so it has no team id to put here. Leaving this empty means
+    // the app can never satisfy appCodeRequirement, so fan control stays
+    // permanently unavailable in this fork — which is intended. Do NOT weaken
+    // or remove the requirement below to "make fan control work": it is what
+    // stops an arbitrary process from talking to a daemon running as root, and
+    // relaxing it would be a privilege-escalation hole, not a feature.
+    static let teamID = ""
 
     #if VORSSAINT_DEVELOPMENT
-    static let appBundleID = "com.vorssaint.utils.dev"
+    static let appBundleID = "com.rishabhraaj17.vitals.dev"
     #else
-    static let appBundleID = "com.vorssaint.utils"
+    static let appBundleID = "com.rishabhraaj17.vitals"
     #endif
 
     static let helperID = "\(appBundleID).fan-control"

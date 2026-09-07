@@ -34,7 +34,7 @@ final class HomebrewManager: ObservableObject {
     @Published private(set) var didOpenShellConfig = false
     @Published private(set) var outdatedPackagesByID: [String: HomebrewPackageUpdate] = [:]
 
-    private let workQueue = DispatchQueue(label: "com.vorssaint.homebrew", qos: .userInitiated)
+    private let workQueue = DispatchQueue(label: "com.rishabhraaj17.vitals.homebrew", qos: .userInitiated)
     private var searchGeneration = 0
     private var detailsGeneration = 0
     private var outdatedGeneration = 0
@@ -241,7 +241,7 @@ final class HomebrewManager: ObservableObject {
     }
 
     /// Removal needs a fresh inventory: an app may have just been installed
-    /// outside Vorssaint. Concurrent requests for the same path share one read.
+    /// outside Vitals. Concurrent requests for the same path share one read.
     /// A failed read must never be mistaken for an unmanaged app.
     func packageManagingApplication(at url: URL,
                                     completion: @escaping (Result<HomebrewPackage?, HomebrewOwnershipError>) -> Void) {

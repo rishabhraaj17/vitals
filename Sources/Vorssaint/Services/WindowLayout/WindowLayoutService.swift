@@ -83,7 +83,7 @@ final class WindowLayoutService: ObservableObject {
     /// drops it.
     private var edgeSnapStillCheckGeneration = 0
     private var edgeSnapStillCheckPending = false
-    private let edgeSnapResolveQueue = DispatchQueue(label: "com.vorssaint.edge-snap-resolve",
+    private let edgeSnapResolveQueue = DispatchQueue(label: "com.rishabhraaj17.vitals.edge-snap-resolve",
                                                      qos: .userInitiated)
     private var edgeSnapPreviewPanel: NSPanel?
     private var edgeSnapPreviewGeneration = 0
@@ -1646,7 +1646,7 @@ final class WindowLayoutService: ObservableObject {
             // an opt-in restore with a saved size, after the window server
             // shows that the window followed the pointer. Content drags never
             // ask the app here. A modifier move needs no such evidence:
-            // Vorssaint moved that window itself. Its release skips a lookup that has
+            // Vitals moved that window itself. Its release skips a lookup that has
             // already come back empty every time it was tried.
             let lookupsExhausted = edgeSnapResolveAttempts >= edgeSnapResolveAttemptLimit && !edgeSnapResolving
             let releasedAfterDrag = pressOrigin.map {
@@ -1825,7 +1825,7 @@ final class WindowLayoutService: ObservableObject {
                 self.edgeSnapResolving = false
                 guard let resolved, self.edgeSnapDrag == nil,
                       self.edgeSnapPressCandidate != nil else { return }
-                // A modifier move is moving from the start: Vorssaint moves that
+                // A modifier move is moving from the start: Vitals moves that
                 // window, so the window server is never asked to confirm it.
                 self.edgeSnapDrag = WindowEdgeSnapDrag(window: resolved.window,
                                                        key: resolved.key,
@@ -2570,7 +2570,7 @@ final class WindowLayoutService: ObservableObject {
     /// where the pointer no longer is. Coalescing, because a slow write must
     /// not build a backlog the window then animates through after the drag has
     /// finished: only the newest position is ever pending.
-    private let gestureApplyQueue = DispatchQueue(label: "com.vorssaint.window-gesture-apply",
+    private let gestureApplyQueue = DispatchQueue(label: "com.rishabhraaj17.vitals.window-gesture-apply",
                                                   qos: .userInteractive)
     private let gestureApplyLock = NSLock()
     private var pendingGestureApply: (gesture: WindowPointerGesture, pointer: CGPoint)?

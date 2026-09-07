@@ -127,11 +127,11 @@ enum ScreenshotFeatureTests {
 
         let ownScreenshotWindows: Set<CGWindowID> = [11, 12, 13]
         let protectedScreenshotWindows: Set<CGWindowID> = [12, 99]
-        suite.expect(Defaults.registeredDefaults[DefaultsKey.screenshotHideVorssaintWindows]
+        suite.expect(Defaults.registeredDefaults[DefaultsKey.screenshotHideVitalsWindows]
                 as? Bool == true,
-               "screenshots hide Vorssaint windows by default")
+               "screenshots hide Vitals windows by default")
         suite.expect(SettingsBackupSupport.exportKeys().contains(
-            DefaultsKey.screenshotHideVorssaintWindows),
+            DefaultsKey.screenshotHideVitalsWindows),
                "the screenshot window visibility preference travels in backups")
         // An editor or a pinned capture is an ordinary window, so the
         // visibility preference has to reach it; the overlays and HUDs taking
@@ -151,57 +151,57 @@ enum ScreenshotFeatureTests {
         ) == ownScreenshotWindows,
         "a recording is exempt from the preference and protects both kinds")
         suite.expect(ScreenshotCapturePolicy.excludedWindowIDs(
-            hideVorssaintWindows: false,
+            hideVitalsWindows: false,
             ownWindowIDs: ownScreenshotWindows,
             protectedWindowIDs: ScreenshotCapturePolicy.protectedWindowIDs(
                 workflowWindowIDs: workflowWindows,
                 contentWindowIDs: contentWindows,
                 honoursVisibilityPreference: true)
         ) == workflowWindows,
-        "showing Vorssaint windows leaves an editor and a pin in the capture")
+        "showing Vitals windows leaves an editor and a pin in the capture")
         suite.expect(ScreenshotCapturePolicy.canPickWindow(
             13,
             isOwnWindow: true,
-            hideVorssaintWindows: false,
+            hideVitalsWindows: false,
             protectedWindowIDs: ScreenshotCapturePolicy.protectedWindowIDs(
                 workflowWindowIDs: workflowWindows,
                 contentWindowIDs: contentWindows,
                 honoursVisibilityPreference: true)
-        ), "a pinned capture can be picked while Vorssaint windows are shown")
+        ), "a pinned capture can be picked while Vitals windows are shown")
         suite.expect(ScreenshotCapturePolicy.excludedWindowIDs(
-            hideVorssaintWindows: true,
+            hideVitalsWindows: true,
             ownWindowIDs: ownScreenshotWindows,
             protectedWindowIDs: protectedScreenshotWindows
         ) == ownScreenshotWindows,
-        "screenshot hiding Vorssaint excludes every own window")
+        "screenshot hiding Vitals excludes every own window")
         suite.expect(ScreenshotCapturePolicy.excludedWindowIDs(
-            hideVorssaintWindows: false,
+            hideVitalsWindows: false,
             ownWindowIDs: ownScreenshotWindows,
             protectedWindowIDs: protectedScreenshotWindows
         ) == [12],
-        "screenshot keeps protected windows excluded while Vorssaint is visible")
+        "screenshot keeps protected windows excluded while Vitals is visible")
         suite.expect(ScreenshotCapturePolicy.canPickWindow(
             7,
             isOwnWindow: false,
-            hideVorssaintWindows: true,
+            hideVitalsWindows: true,
             protectedWindowIDs: protectedScreenshotWindows
         ), "screenshot can always pick an ordinary external window")
         suite.expect(!ScreenshotCapturePolicy.canPickWindow(
             11,
             isOwnWindow: true,
-            hideVorssaintWindows: true,
+            hideVitalsWindows: true,
             protectedWindowIDs: protectedScreenshotWindows
-        ), "screenshot cannot pick a Vorssaint window while hiding them")
+        ), "screenshot cannot pick a Vitals window while hiding them")
         suite.expect(ScreenshotCapturePolicy.canPickWindow(
             11,
             isOwnWindow: true,
-            hideVorssaintWindows: false,
+            hideVitalsWindows: false,
             protectedWindowIDs: protectedScreenshotWindows
-        ), "screenshot can pick an ordinary Vorssaint window when visible")
+        ), "screenshot can pick an ordinary Vitals window when visible")
         suite.expect(!ScreenshotCapturePolicy.canPickWindow(
             12,
             isOwnWindow: true,
-            hideVorssaintWindows: false,
+            hideVitalsWindows: false,
             protectedWindowIDs: protectedScreenshotWindows
         ), "screenshot cannot pick its own protected capture UI")
         islandCaptureChecks(suite)
@@ -1158,9 +1158,9 @@ enum ScreenshotFeatureTests {
             for: .scrolling,
             screenshotFreeze: true,
             screenshotIncludePointer: true,
-            screenshotHideVorssaintWindows: false)
+            screenshotHideVitalsWindows: false)
         suite.expect(scrollingPolicy == .init(freeze: false, includePointer: false,
-                                              hideVorssaintWindows: false,
+                                              hideVitalsWindows: false,
                                               keepsContentWindowsOut: false,
                                               usesGeometry: true),
                "scrolling capture selects a live region without repeated pointer marks")
@@ -1173,27 +1173,27 @@ enum ScreenshotFeatureTests {
             for: .screenshot,
             screenshotFreeze: false,
             screenshotIncludePointer: true,
-            screenshotHideVorssaintWindows: true)
+            screenshotHideVitalsWindows: true)
         let recorderPolicy = ScreenshotSupport.unifiedCapturePolicy(
             for: .recording,
             screenshotFreeze: false,
             screenshotIncludePointer: true,
-            screenshotHideVorssaintWindows: true)
+            screenshotHideVitalsWindows: true)
         let textPolicy = ScreenshotSupport.unifiedCapturePolicy(
             for: .text,
             screenshotFreeze: false,
             screenshotIncludePointer: true,
-            screenshotHideVorssaintWindows: true)
+            screenshotHideVitalsWindows: true)
         suite.expect(liveScreenshotPolicy == .init(freeze: false, includePointer: true,
-                                             hideVorssaintWindows: true,
+                                             hideVitalsWindows: true,
                                              keepsContentWindowsOut: true,
                                              usesGeometry: false)
                 && recorderPolicy == .init(freeze: true, includePointer: false,
-                                           hideVorssaintWindows: false,
+                                           hideVitalsWindows: false,
                                            keepsContentWindowsOut: true,
                                            usesGeometry: true)
                 && textPolicy == .init(freeze: true, includePointer: false,
-                                       hideVorssaintWindows: true,
+                                       hideVitalsWindows: true,
                                        keepsContentWindowsOut: true,
                                        usesGeometry: false),
                "switching capture mode rebuilds the frozen frame, pointer and window policy")
@@ -1201,12 +1201,12 @@ enum ScreenshotFeatureTests {
             for: .color,
             screenshotFreeze: false,
             screenshotIncludePointer: true,
-            screenshotHideVorssaintWindows: true)
+            screenshotHideVitalsWindows: true)
         suite.expect(textPolicy.sharesSource(with: colorPolicy)
                 && !textPolicy.sharesSource(with: recorderPolicy)
                 && !textPolicy.sharesSource(with: liveScreenshotPolicy),
                "only freeze, pointer and window policy decide whether a mode needs its own photograph")
-        // With "Hide Vorssaint windows" off, freeze on and the pointer off,
+        // With "Hide Vitals windows" off, freeze on and the pointer off,
         // every tool wants the same pixels except for the editors and pins
         // recording keeps out, so switching to or from recording has to
         // re-photograph and re-list the pickable windows (issue #780).
@@ -1215,13 +1215,13 @@ enum ScreenshotFeatureTests {
                 for: $0,
                 screenshotFreeze: true,
                 screenshotIncludePointer: false,
-                screenshotHideVorssaintWindows: false))
+                screenshotHideVitalsWindows: false))
         })
         suite.expect(shownWindowPolicies[.recording]?.keepsContentWindowsOut == true
                 && shownWindowPolicies[.screenshot]?.keepsContentWindowsOut == false
                 && shownWindowPolicies[.text]?.keepsContentWindowsOut == false
                 && shownWindowPolicies[.color]?.keepsContentWindowsOut == false,
-               "only recording keeps editors and pins out while Vorssaint windows are shown")
+               "only recording keeps editors and pins out while Vitals windows are shown")
         suite.expect(shownWindowPolicies[.recording].map { recording in
             [ScreenCaptureTool.screenshot, .text, .color].allSatisfy { tool in
                 guard let other = shownWindowPolicies[tool] else { return false }
@@ -1240,10 +1240,10 @@ enum ScreenshotFeatureTests {
                 for: $0,
                 screenshotFreeze: true,
                 screenshotIncludePointer: false,
-                screenshotHideVorssaintWindows: true)
+                screenshotHideVitalsWindows: true)
         }
         suite.expect(hiddenWindowPolicies.allSatisfy(\.keepsContentWindowsOut),
-               "hiding Vorssaint windows keeps editors and pins out of every tool")
+               "hiding Vitals windows keeps editors and pins out of every tool")
         suite.expect(ScreenshotSupport.captureGuideIsVisible(pointerOnDisplay: true,
                                                        selectionInProgress: false,
                                                        capturePending: false)
@@ -3049,11 +3049,11 @@ enum ScreenshotFeatureTests {
                "backdrop style and presets register empty")
 
         // Watermark: the mark of your own that rides along every capture.
-        let textMark = ScreenshotSupport.WatermarkStyle(kind: .text, text: "  Vorssaint  ",
+        let textMark = ScreenshotSupport.WatermarkStyle(kind: .text, text: "  Vitals  ",
                                                         color: "blue", anchor: .topLeading,
                                                         size: 0.5, opacity: 0.3, rotation: 30)
         let markRoundTrip = ScreenshotSupport.WatermarkStyle.decoded(textMark.encoded())
-        suite.expect(markRoundTrip == textMark.sanitized() && markRoundTrip.text == "Vorssaint"
+        suite.expect(markRoundTrip == textMark.sanitized() && markRoundTrip.text == "Vitals"
                 && markRoundTrip.anchor == .topLeading && markRoundTrip.rotation == 30,
                "a watermark style round-trips through JSON, trimmed")
         suite.expect(ScreenshotSupport.WatermarkStyle.decoded(nil).kind == .none
@@ -3793,7 +3793,7 @@ enum ScreenshotFeatureTests {
             developerOverride: "https://test.example/")
         suite.expect(testShareEndpoint.absoluteString == "https://test.example"
                 && ScreenshotSharingSupport.endpoint(
-                    bundleIdentifier: "com.vorssaint.utils",
+                    bundleIdentifier: "com.rishabhraaj17.vitals",
                     developerOverride: "https://test.example").absoluteString
                     == ScreenshotSharingSupport.productionEndpoint.absoluteString
                 && ScreenshotSharingSupport.endpoint(
@@ -4118,10 +4118,10 @@ enum ScreenshotFeatureTests {
 
         // Muting every microphone, not just the one the Mac is set to: an app
         // pointed at a device of its own has to go silent too.
-        suite.expect(MicMuteSupport.isOwnDevice(name: "Vorssaint Mixer")
-                && MicMuteSupport.isOwnDevice(name: "Vorssaint AirPlay")
-                && MicMuteSupport.isOwnDevice(name: "Vorssaint Island Levels")
-                && MicMuteSupport.isOwnDevice(name: "Vorssaint Recorder")
+        suite.expect(MicMuteSupport.isOwnDevice(name: "Vitals Mixer")
+                && MicMuteSupport.isOwnDevice(name: "Vitals AirPlay")
+                && MicMuteSupport.isOwnDevice(name: "Vitals Island Levels")
+                && MicMuteSupport.isOwnDevice(name: "Vitals Recorder")
                 && !MicMuteSupport.isOwnDevice(name: "MacBook Air Microphone"),
                "the mute skips the app's own aggregate devices and no other")
         suite.expect(!MicMuteSupport.shouldSaveVolume(nil)
@@ -4290,7 +4290,7 @@ enum ScreenshotFeatureTests {
         GlobalShortcut.refreshLayoutLabels()
     }
 
-    /// The island follows "Show in screenshots and videos" in Vorssaint's own
+    /// The island follows "Show in screenshots and videos" in Vitals's own
     /// captures too, area selections included, except while it is the tool
     /// taking the picture.
     private static func islandCaptureChecks(_ suite: TestSuite) {
@@ -4314,19 +4314,19 @@ enum ScreenshotFeatureTests {
             // What NotchService protects: the island windows not shown.
             let protected = islandWindows.subtracting(visible).union([overlay])
             let hidden = ScreenshotCapturePolicy.excludedWindowIDs(
-                hideVorssaintWindows: true, ownWindowIDs: ownWindows,
+                hideVitalsWindows: true, ownWindowIDs: ownWindows,
                 protectedWindowIDs: protected, islandWindowIDs: visible)
             suite.expect(hidden == ownWindows.subtracting(visible),
-                         "hiding Vorssaint windows leaves the shown island in (capture tool: \(tool))")
+                         "hiding Vitals windows leaves the shown island in (capture tool: \(tool))")
             let kept = ScreenshotCapturePolicy.excludedWindowIDs(
-                hideVorssaintWindows: false, ownWindowIDs: ownWindows,
+                hideVitalsWindows: false, ownWindowIDs: ownWindows,
                 protectedWindowIDs: protected, islandWindowIDs: visible)
             suite.expect(kept == protected,
-                         "showing Vorssaint windows still keeps the capture interface out (capture tool: \(tool))")
+                         "showing Vitals windows still keeps the capture interface out (capture tool: \(tool))")
         }
         // Watch reads an area and must never see the island, whatever the preference says.
         suite.expect(ScreenshotCapturePolicy.excludedWindowIDs(
-            hideVorssaintWindows: true, ownWindowIDs: ownWindows,
+            hideVitalsWindows: true, ownWindowIDs: ownWindows,
             protectedWindowIDs: islandWindows.union([overlay]),
             islandWindowIDs: shown(preference: true, tool: false)) == ownWindows,
                      "a caller that protects the island keeps it out even when it shows in captures")
