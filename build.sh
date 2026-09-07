@@ -62,7 +62,17 @@ FAN_HELPER_ID="$APP_BUNDLE_ID.fan-control"
 # Sources/NowPlayingAdapter. Staged under Contents/Frameworks, signed on its own.
 NOW_PLAYING_ADAPTER_ID="$APP_BUNDLE_ID.now-playing"
 NOW_PLAYING_ADAPTER="libVorssaintNowPlaying.dylib"
-TARGET="arm64-apple-macosx14.0"
+# Build for the machine doing the building. Upstream only ships Apple Silicon,
+# so this was pinned; deriving it keeps arm64 identical and lets an Intel Mac
+# build and run its own binary and test harness. The architecture comes from the
+# hardware rather than `uname -m`, which reports the calling process's
+# architecture and would answer x86_64 for a shell running under Rosetta on an
+# Apple Silicon Mac, quietly cross-compiling an Intel build there.
+if [[ "$(sysctl -n hw.optional.arm64 2>/dev/null)" == "1" ]]; then
+    TARGET="arm64-apple-macosx14.0"
+else
+    TARGET="x86_64-apple-macosx14.0"
+fi
 ENTITLEMENTS="Resources/Vorssaint.entitlements"
 LEGACY_IDENTITY="Vorssaint Utils Signing"
 

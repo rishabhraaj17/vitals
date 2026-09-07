@@ -240,14 +240,21 @@ with:
 ```bash
 # Build for the machine doing the building. Upstream only ships Apple Silicon,
 # so this was pinned; deriving it keeps arm64 identical and lets an Intel Mac
-# build and run its own binary and test harness.
-TARGET="$(uname -m)-apple-macosx14.0"
+# build and run its own binary and test harness. The architecture comes from the
+# hardware rather than `uname -m`, which reports the calling process's
+# architecture and would answer x86_64 for a shell running under Rosetta on an
+# Apple Silicon Mac, quietly cross-compiling an Intel build there.
+if [[ "$(sysctl -n hw.optional.arm64 2>/dev/null)" == "1" ]]; then
+    TARGET="arm64-apple-macosx14.0"
+else
+    TARGET="x86_64-apple-macosx14.0"
+fi
 ```
 
 - [ ] **Step 3: Verify the target resolves**
 
 ```bash
-bash -c 'TARGET="$(uname -m)-apple-macosx14.0"; echo "$TARGET"'
+bash -c 'if [[ "$(sysctl -n hw.optional.arm64 2>/dev/null)" == "1" ]]; then echo "arm64-apple-macosx14.0"; else echo "x86_64-apple-macosx14.0"; fi'
 ```
 
 Expected on this machine: `x86_64-apple-macosx14.0`
@@ -290,7 +297,7 @@ log show --predicate 'process == "Vorssaint"' --last 5m --style compact | tail -
 
 ```bash
 git add build.sh
-git commit -m "build: derive the swift target from the host architecture"
+git commit -m "chore(build): derive the swift target from the host architecture"
 ```
 
 **Exit criteria for Stage 1:** `./build.sh --test` passes, `./build.sh` succeeds, and the app shows a menu bar icon and an openable panel.
