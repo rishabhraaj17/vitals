@@ -308,7 +308,7 @@ an i7-9750H):
 ```bash
 grep -E '^(TC1C|TC2C|TC3C|TC4C|TC5C|TC6C|TC7C|TC8C)' docs/superpowers/intel-smc-keys.txt
 grep -E '^(TC0P|TC0E|TC0F|TCXC|TCSA)' docs/superpowers/intel-smc-keys.txt
-grep -E '^(TG0P|TG1P|TGDD)' docs/superpowers/intel-smc-keys.txt
+grep -E '^(TG0P|TG1P)' docs/superpowers/intel-smc-keys.txt
 grep -E '^TCGC' docs/superpowers/intel-smc-keys.txt
 ```
 
@@ -320,10 +320,16 @@ hardware `TC0C`/`TC9C` do not exist, and `TC7C`/`TC8C` exist but read -127
 (the plausibility filter discards those values, and keeping the keys lets an
 8-core Intel chip work). Three present `TC` keys are deliberately excluded:
 `TC0T` (0.18, not a temperature), `TCMX` (86.00, a max-of-cores summary, not a
-sensor), and `TCGC` (71.00, the PECI GPU sensor). Two present `TG` keys are
-also excluded: `TGDT` (0.13, not a temperature) and `TGVF`/`TGVP` (59.19,
-voltage-regulator temperatures, not the GPU itself); `TGDE`/`TGDF` are present
-but their meaning is not certain enough to include.
+sensor), and `TCGC` (71.00, the PECI GPU sensor). The Intel GPU key set is the
+two proximity sensors only, `TG0P` and `TG1P`. `TGDT` (0.13) is not a
+temperature; `TGVF`/`TGVP` (59.19) are voltage-regulator temperatures, not the
+GPU itself. `TGDD` and `TGDF` are present and read as plausible temperatures,
+but a cross-check against Apple's own `powermetrics --samplers smc` showed
+`TGDD` tracking the CPU package sensor `TC0F` (within 1.5 C of it) while
+sitting 18 C above the GPU die temperature `powermetrics` reported — so it is
+excluded rather than trusted. `TGDE` (63.00) happens to sit close to that same
+`powermetrics` GPU figure (64.00), but its meaning is unverified, and a key is
+not adopted on the strength of one matching number.
 
 Note that `TCGC` is the Intel PECI **GPU** sensor. It starts with `TC` but must
 never be classified as CPU. That is the reason these tables are explicit
@@ -362,11 +368,14 @@ insert:
                "the SMC's own max-of-cores summary is not treated as a sensor")
         expect(!TemperatureSensorSelector.isCPUTemperatureKey("Tp01", platform: .intel),
                "Intel never reads an Apple Silicon core key")
-        expect(TemperatureSensorSelector.isGPUTemperatureKey("TGDD", platform: .intel),
-               "the Intel discrete GPU die sensor is a GPU temperature")
+        expect(TemperatureSensorSelector.isGPUTemperatureKey("TG0P", platform: .intel)
+               && TemperatureSensorSelector.isGPUTemperatureKey("TG1P", platform: .intel),
+               "Intel GPU proximity sensors are GPU temperatures")
+        expect(!TemperatureSensorSelector.isGPUTemperatureKey("TGDD", platform: .intel),
+               "TGDD tracks the CPU package, not the GPU, and is never reported as a GPU temperature")
         expect(!TemperatureSensorSelector.isGPUTemperatureKey("TGDT", platform: .intel),
                "TGDT is not a temperature and never reaches the GPU reading")
-        expect(!TemperatureSensorSelector.isGPUTemperatureKey("TGDD", platform: .appleM4Family),
+        expect(!TemperatureSensorSelector.isGPUTemperatureKey("TG0P", platform: .appleM4Family),
                "Apple Silicon GPU classification is unchanged by Intel support")
         expect(TemperatureSensorSelector.isGPUTemperatureKey("Tg0f", platform: .appleM4Family),
                "Apple Silicon GPU sensors still classify by their own prefix")
@@ -445,8 +454,14 @@ Immediately after the `appleM5CPUCoreKeys` declaration, insert:
         "TC0P", "TC0E", "TC0F", "TCXC", "TCSA",
     ]
 
+    // Proximity sensors only. TGDD and TGDF are present on this hardware but
+    // track the CPU package rather than the GPU — measured 18 C above the GPU
+    // die temperature Apple's own powermetrics reports, and within 1.5 C of the
+    // CPU package sensor. TGDE sits close to Apple's figure but its meaning is
+    // unverified, so it stays out rather than being adopted on the strength of
+    // one matching number.
     private static let intelGPUKeys: Set<String> = [
-        "TG0P", "TG1P", "TGDD",
+        "TG0P", "TG1P",
     ]
 ```
 
@@ -565,7 +580,7 @@ to:
 ./build.sh --test
 ```
 
-Expected: PASS, with a check count higher than Task 2's baseline by exactly 16.
+Expected: PASS, with a check count higher than Task 2's baseline by exactly 17.
 Any pre-existing assertion that now fails is a regression against constraint R4 —
 stop and fix rather than adjusting the old assertion.
 

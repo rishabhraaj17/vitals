@@ -91,8 +91,14 @@ enum TemperatureSensorSelector {
         "TC0P", "TC0E", "TC0F", "TCXC", "TCSA",
     ]
 
+    // Proximity sensors only. TGDD and TGDF are present on this hardware but
+    // track the CPU package rather than the GPU — measured 18 C above the GPU
+    // die temperature Apple's own powermetrics reports, and within 1.5 C of the
+    // CPU package sensor. TGDE sits close to Apple's figure but its meaning is
+    // unverified, so it stays out rather than being adopted on the strength of
+    // one matching number.
     private static let intelGPUKeys: Set<String> = [
-        "TG0P", "TG1P", "TGDD",
+        "TG0P", "TG1P",
     ]
 
     static func platform(brandString: String?) -> CPUTemperaturePlatform {

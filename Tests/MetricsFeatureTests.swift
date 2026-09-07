@@ -758,11 +758,14 @@ enum MetricsFeatureTests {
                "the SMC's own max-of-cores summary is not treated as a sensor")
         suite.expect(!TemperatureSensorSelector.isCPUTemperatureKey("Tp01", platform: .intel),
                "Intel never reads an Apple Silicon core key")
-        suite.expect(TemperatureSensorSelector.isGPUTemperatureKey("TGDD", platform: .intel),
-               "the Intel discrete GPU die sensor is a GPU temperature")
+        suite.expect(TemperatureSensorSelector.isGPUTemperatureKey("TG0P", platform: .intel)
+               && TemperatureSensorSelector.isGPUTemperatureKey("TG1P", platform: .intel),
+               "Intel GPU proximity sensors are GPU temperatures")
+        suite.expect(!TemperatureSensorSelector.isGPUTemperatureKey("TGDD", platform: .intel),
+               "TGDD tracks the CPU package, not the GPU, and is never reported as a GPU temperature")
         suite.expect(!TemperatureSensorSelector.isGPUTemperatureKey("TGDT", platform: .intel),
                "TGDT is not a temperature and never reaches the GPU reading")
-        suite.expect(!TemperatureSensorSelector.isGPUTemperatureKey("TGDD", platform: .appleM4Family),
+        suite.expect(!TemperatureSensorSelector.isGPUTemperatureKey("TG0P", platform: .appleM4Family),
                "Apple Silicon GPU classification is unchanged by Intel support")
         suite.expect(TemperatureSensorSelector.isGPUTemperatureKey("Tg0f", platform: .appleM4Family),
                "Apple Silicon GPU sensors still classify by their own prefix")
