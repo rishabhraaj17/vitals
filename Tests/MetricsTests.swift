@@ -1798,6 +1798,35 @@ struct MetricsTests {
                "A18 Pro compatibility does not guess support for another chip")
         expect(!TemperatureSensorSelector.hasCPUCoreSet(platform: a18Platform),
                "A18 Pro discovery keeps its fallback readings without inventing a per-core map")
+        expect(TemperatureSensorSelector.platform(
+                   brandString: "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz") == .intel,
+               "an Intel brand string selects the Intel sensor map")
+        expect(TemperatureSensorSelector.platform(
+                   brandString: "  Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz\n") == .intel,
+               "Intel identification ignores surrounding whitespace")
+        expect(!TemperatureSensorSelector.hasCPUCoreSet(platform: .intel),
+               "Intel keeps its die and proximity fallback instead of demanding a per-core map")
+        expect(TemperatureSensorSelector.isCPUCoreKey("TC1C", platform: .intel),
+               "Intel per-core PECI sensors are core keys")
+        expect(TemperatureSensorSelector.isCPUTemperatureKey("TC0P", platform: .intel)
+               && TemperatureSensorSelector.isCPUTemperatureKey("TC0E", platform: .intel),
+               "Intel proximity and die sensors count as CPU temperatures")
+        expect(!TemperatureSensorSelector.isCPUTemperatureKey("TCGC", platform: .intel),
+               "the Intel PECI GPU sensor is never read as a CPU temperature")
+        expect(!TemperatureSensorSelector.isCPUTemperatureKey("TC0T", platform: .intel),
+               "TC0T is not a temperature and never reaches the CPU reading")
+        expect(!TemperatureSensorSelector.isCPUTemperatureKey("TCMX", platform: .intel),
+               "the SMC's own max-of-cores summary is not treated as a sensor")
+        expect(!TemperatureSensorSelector.isCPUTemperatureKey("Tp01", platform: .intel),
+               "Intel never reads an Apple Silicon core key")
+        expect(TemperatureSensorSelector.isGPUTemperatureKey("TGDD", platform: .intel),
+               "the Intel discrete GPU die sensor is a GPU temperature")
+        expect(!TemperatureSensorSelector.isGPUTemperatureKey("TGDT", platform: .intel),
+               "TGDT is not a temperature and never reaches the GPU reading")
+        expect(!TemperatureSensorSelector.isGPUTemperatureKey("TGDD", platform: .appleM4Family),
+               "Apple Silicon GPU classification is unchanged by Intel support")
+        expect(TemperatureSensorSelector.isGPUTemperatureKey("Tg0f", platform: .appleM4Family),
+               "Apple Silicon GPU sensors still classify by their own prefix")
         // A small hardware diagnostic sample, followed by synthetic failure cases.
         let a18Sensors: [(key: String, value: Double)] = [
             ("Te05", 66.3), ("Tp05", 66.6), ("Tp0t", 75.0),
@@ -1912,6 +1941,22 @@ struct MetricsTests {
             platform: .generic
         )
         expectClose(genericCPU ?? -1, 51.6, "generic CPU sensor selection preserves previous hottest behavior")
+        let intelCoreCPU = TemperatureSensorSelector.displayedCPUTemperature(
+            readings: [("TC0P", 48.0), ("TC1C", 71.5), ("TC2C", 66.0)],
+            platform: .intel
+        )
+        expectClose(intelCoreCPU ?? -1, 71.5, "Intel prefers the hottest per-core PECI sensor")
+        let intelFallbackCPU = TemperatureSensorSelector.displayedCPUTemperature(
+            readings: [("TC0P", 48.0), ("TC0E", 55.25)],
+            platform: .intel
+        )
+        expectClose(intelFallbackCPU ?? -1, 55.25,
+                    "Intel falls back to die and proximity when no core sensor reports")
+        let intelInvalidCPU = TemperatureSensorSelector.displayedCPUTemperature(
+            readings: [("TC0P", 0.5), ("TC0E", 130.0)],
+            platform: .intel
+        )
+        expect(intelInvalidCPU == nil, "Intel discards implausible readings rather than showing them")
 
         // MARK: Hot CPU alert
 

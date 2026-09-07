@@ -11,6 +11,7 @@ enum CPUTemperaturePlatform: Equatable {
     case appleM4Family
     case appleM5Family
     case unmappedAppleSilicon
+    case intel
     case generic
 }
 
@@ -56,8 +57,31 @@ enum TemperatureSensorSelector {
         "Tp0m", "Tp0p", "Tp0u", "Tp0y",
     ]
 
+    // Intel sensor names are explicit rather than prefix-matched because TCGC
+    // is the PECI *GPU* sensor: a "TC" prefix rule would report it as the CPU
+    // temperature. These tables are trimmed to what an i7-9750H actually
+    // reports (docs/superpowers/intel-smc-keys.txt) — a key that is absent
+    // simply never resolves, but a key that means something else (a summary
+    // like TCMX, a non-temperature like TC0T, or a voltage-regulator sensor
+    // like TGVP) would show a wrong number.
+    private static let intelCPUCoreKeys: Set<String> = [
+        "TC1C", "TC2C", "TC3C", "TC4C",
+        "TC5C", "TC6C", "TC7C", "TC8C",
+    ]
+
+    private static let intelCPUAuxiliaryKeys: Set<String> = [
+        "TC0P", "TC0E", "TC0F", "TCXC", "TCSA",
+    ]
+
+    private static let intelGPUKeys: Set<String> = [
+        "TG0P", "TG1P", "TGDD",
+    ]
+
     static func platform(brandString: String?) -> CPUTemperaturePlatform {
         let brand = brandString?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        // An Intel Mac reports its vendor here and reads an entirely separate
+        // sensor family, so it is decided before any Apple mapping is tried.
+        if brand.hasPrefix("Intel") { return .intel }
         // Preserve the established Tp/Te reading path for this supported chip
         // until a verified per-core map is available.
         if brand == "Apple A18 Pro" { return .generic }
@@ -93,7 +117,7 @@ enum TemperatureSensorSelector {
             return value
         }
         switch platform {
-        case .generic:
+        case .generic, .intel:
             return valid.map { $0.value }.max()
         case .appleM1Family, .appleM2Family, .appleM3Family, .appleM4Family,
              .appleM5Family, .unmappedAppleSilicon:
@@ -105,7 +129,7 @@ enum TemperatureSensorSelector {
         switch platform {
         case .appleM1Family, .appleM2Family, .appleM3Family, .appleM4Family, .appleM5Family:
             return true
-        case .unmappedAppleSilicon, .generic: return false
+        case .unmappedAppleSilicon, .generic, .intel: return false
         }
     }
 
@@ -121,6 +145,8 @@ enum TemperatureSensorSelector {
             return appleM4CPUCoreKeys.contains(key)
         case .appleM5Family:
             return appleM5CPUCoreKeys.contains(key)
+        case .intel:
+            return intelCPUCoreKeys.contains(key)
         case .unmappedAppleSilicon, .generic:
             return false
         }
@@ -129,8 +155,22 @@ enum TemperatureSensorSelector {
     static func isCPUTemperatureKey(_ key: String,
                                     platform: CPUTemperaturePlatform) -> Bool {
         if platform == .unmappedAppleSilicon { return false }
+        // Tested before the Apple prefixes so an Intel Mac can only ever read
+        // keys this file has vetted.
+        if platform == .intel {
+            return intelCPUCoreKeys.contains(key) || intelCPUAuxiliaryKeys.contains(key)
+        }
         if key.hasPrefix("Tp") || key.hasPrefix("Te") { return true }
         return platform == .appleM3Family && key.hasPrefix("Tf")
+    }
+
+    /// GPU sensors are named per platform the same way CPU ones are. Four call
+    /// sites used to inline the Apple Silicon prefix; they share this instead so
+    /// the two families cannot drift apart.
+    static func isGPUTemperatureKey(_ key: String,
+                                    platform: CPUTemperaturePlatform) -> Bool {
+        if platform == .intel { return intelGPUKeys.contains(key) }
+        return key.hasPrefix("Tg")
     }
 
     static func stabilizedTemperature(_ reading: Double?,

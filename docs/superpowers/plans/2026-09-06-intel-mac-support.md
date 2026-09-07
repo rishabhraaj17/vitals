@@ -302,19 +302,28 @@ git commit -m "chore(build): derive the swift target from the host architecture"
 
 - [ ] **Step 1: Reconcile the planned key tables against the dump**
 
-Before writing code, check the tables below against Task 1's capture:
+Before writing code, check the tables below against Task 1's capture (taken on
+an i7-9750H):
 
 ```bash
-grep -E '^(TC0C|TC1C|TC2C|TC3C|TC4C|TC5C|TC6C|TC7C|TC8C|TC9C)' docs/superpowers/intel-smc-keys.txt
-grep -E '^(TC0P|TC0D|TC0E|TC0F|TC0H|TCXC|TCXc|TCSC|TCSA)' docs/superpowers/intel-smc-keys.txt
-grep -E '^(TG0P|TG0D|TG1D|TGDD)' docs/superpowers/intel-smc-keys.txt
+grep -E '^(TC1C|TC2C|TC3C|TC4C|TC5C|TC6C|TC7C|TC8C)' docs/superpowers/intel-smc-keys.txt
+grep -E '^(TC0P|TC0E|TC0F|TCXC|TCSA)' docs/superpowers/intel-smc-keys.txt
+grep -E '^(TG0P|TG1P|TGDD)' docs/superpowers/intel-smc-keys.txt
 grep -E '^TCGC' docs/superpowers/intel-smc-keys.txt
 ```
 
-**Delete from the Swift tables in Step 3 any key the dump does not list.** Do not
+**Delete from the Swift tables in Step 5 any key the dump does not list.** Do not
 add keys the dump lists but these greps missed without checking what they are
 first — an unrecognized `TC*` key may be a package or PECI-offset sensor rather
-than a core temperature, and adding it would show the wrong number.
+than a core temperature, and adding it would show the wrong number. On this
+hardware `TC0C`/`TC9C` do not exist, and `TC7C`/`TC8C` exist but read -127
+(the plausibility filter discards those values, and keeping the keys lets an
+8-core Intel chip work). Three present `TC` keys are deliberately excluded:
+`TC0T` (0.18, not a temperature), `TCMX` (86.00, a max-of-cores summary, not a
+sensor), and `TCGC` (71.00, the PECI GPU sensor). Two present `TG` keys are
+also excluded: `TGDT` (0.13, not a temperature) and `TGVF`/`TGVP` (59.19,
+voltage-regulator temperatures, not the GPU itself); `TGDE`/`TGDF` are present
+but their meaning is not certain enough to include.
 
 Note that `TCGC` is the Intel PECI **GPU** sensor. It starts with `TC` but must
 never be classified as CPU. That is the reason these tables are explicit
@@ -340,18 +349,24 @@ insert:
                "Intel identification ignores surrounding whitespace")
         expect(!TemperatureSensorSelector.hasCPUCoreSet(platform: .intel),
                "Intel keeps its die and proximity fallback instead of demanding a per-core map")
-        expect(TemperatureSensorSelector.isCPUCoreKey("TC0C", platform: .intel),
+        expect(TemperatureSensorSelector.isCPUCoreKey("TC1C", platform: .intel),
                "Intel per-core PECI sensors are core keys")
         expect(TemperatureSensorSelector.isCPUTemperatureKey("TC0P", platform: .intel)
-               && TemperatureSensorSelector.isCPUTemperatureKey("TC0D", platform: .intel),
+               && TemperatureSensorSelector.isCPUTemperatureKey("TC0E", platform: .intel),
                "Intel proximity and die sensors count as CPU temperatures")
         expect(!TemperatureSensorSelector.isCPUTemperatureKey("TCGC", platform: .intel),
                "the Intel PECI GPU sensor is never read as a CPU temperature")
+        expect(!TemperatureSensorSelector.isCPUTemperatureKey("TC0T", platform: .intel),
+               "TC0T is not a temperature and never reaches the CPU reading")
+        expect(!TemperatureSensorSelector.isCPUTemperatureKey("TCMX", platform: .intel),
+               "the SMC's own max-of-cores summary is not treated as a sensor")
         expect(!TemperatureSensorSelector.isCPUTemperatureKey("Tp01", platform: .intel),
                "Intel never reads an Apple Silicon core key")
-        expect(TemperatureSensorSelector.isGPUTemperatureKey("TG0D", platform: .intel),
-               "the Intel GPU die sensor is a GPU temperature")
-        expect(!TemperatureSensorSelector.isGPUTemperatureKey("TG0D", platform: .appleM4Family),
+        expect(TemperatureSensorSelector.isGPUTemperatureKey("TGDD", platform: .intel),
+               "the Intel discrete GPU die sensor is a GPU temperature")
+        expect(!TemperatureSensorSelector.isGPUTemperatureKey("TGDT", platform: .intel),
+               "TGDT is not a temperature and never reaches the GPU reading")
+        expect(!TemperatureSensorSelector.isGPUTemperatureKey("TGDD", platform: .appleM4Family),
                "Apple Silicon GPU classification is unchanged by Intel support")
         expect(TemperatureSensorSelector.isGPUTemperatureKey("Tg0f", platform: .appleM4Family),
                "Apple Silicon GPU sensors still classify by their own prefix")
@@ -367,18 +382,18 @@ insert:
 
 ```swift
         let intelCoreCPU = TemperatureSensorSelector.displayedCPUTemperature(
-            readings: [("TC0P", 48.0), ("TC0C", 71.5), ("TC1C", 66.0)],
+            readings: [("TC0P", 48.0), ("TC1C", 71.5), ("TC2C", 66.0)],
             platform: .intel
         )
         expectClose(intelCoreCPU ?? -1, 71.5, "Intel prefers the hottest per-core PECI sensor")
         let intelFallbackCPU = TemperatureSensorSelector.displayedCPUTemperature(
-            readings: [("TC0P", 48.0), ("TC0D", 55.25)],
+            readings: [("TC0P", 48.0), ("TC0E", 55.25)],
             platform: .intel
         )
         expectClose(intelFallbackCPU ?? -1, 55.25,
                     "Intel falls back to die and proximity when no core sensor reports")
         let intelInvalidCPU = TemperatureSensorSelector.displayedCPUTemperature(
-            readings: [("TC0P", 0.5), ("TC0D", 130.0)],
+            readings: [("TC0P", 0.5), ("TC0E", 130.0)],
             platform: .intel
         )
         expect(intelInvalidCPU == nil, "Intel discards implausible readings rather than showing them")
@@ -416,21 +431,22 @@ Immediately after the `appleM5CPUCoreKeys` declaration, insert:
 ```swift
     // Intel sensor names are explicit rather than prefix-matched because TCGC
     // is the PECI *GPU* sensor: a "TC" prefix rule would report it as the CPU
-    // temperature. Trim this to what Tools/DumpSMCKeys.swift reports on the
-    // machine — a key that is absent simply never resolves, but a key that
-    // means something else shows a wrong number.
+    // temperature. These tables are trimmed to what an i7-9750H actually
+    // reports (docs/superpowers/intel-smc-keys.txt) — a key that is absent
+    // simply never resolves, but a key that means something else (a summary
+    // like TCMX, a non-temperature like TC0T, or a voltage-regulator sensor
+    // like TGVP) would show a wrong number.
     private static let intelCPUCoreKeys: Set<String> = [
-        "TC0C", "TC1C", "TC2C", "TC3C", "TC4C",
-        "TC5C", "TC6C", "TC7C", "TC8C", "TC9C",
+        "TC1C", "TC2C", "TC3C", "TC4C",
+        "TC5C", "TC6C", "TC7C", "TC8C",
     ]
 
     private static let intelCPUAuxiliaryKeys: Set<String> = [
-        "TC0P", "TC0D", "TC0E", "TC0F",
-        "TC0H", "TCXC", "TCXc", "TCSC", "TCSA",
+        "TC0P", "TC0E", "TC0F", "TCXC", "TCSA",
     ]
 
     private static let intelGPUKeys: Set<String> = [
-        "TG0P", "TG0D", "TG1D", "TGDD",
+        "TG0P", "TG1P", "TGDD",
     ]
 ```
 
@@ -549,7 +565,7 @@ to:
 ./build.sh --test
 ```
 
-Expected: PASS, with a check count higher than Task 2's baseline by exactly 13.
+Expected: PASS, with a check count higher than Task 2's baseline by exactly 16.
 Any pre-existing assertion that now fails is a regression against constraint R4 —
 stop and fix rather than adjusting the old assertion.
 
