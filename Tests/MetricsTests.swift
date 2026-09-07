@@ -9857,6 +9857,11 @@ struct MetricsTests {
         expect(!UpdateServiceSupport.sha256Matches(Data("abc".utf8), expectedHex: "invalid"),
                "update media rejects a malformed pinned digest")
 
+        expect(UpdateServiceSupport.updateRepository == "rishabhraaj17/vitals",
+               "the self-update feed points at this fork")
+        expect(!UpdateServiceSupport.updateRepository.contains("vorssaint"),
+               "the self-update feed never points back at an upstream shipping another architecture")
+
         // Defaults registered
         expect(Defaults.registeredDefaults[DefaultsKey.includeBetaUpdates] as? Bool == false,
                "includeBetaUpdates defaults to false in registeredDefaults")

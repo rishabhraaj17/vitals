@@ -9,9 +9,11 @@ enum UpdateShowcaseInfo {
     static let mediaAssetName = "vorssaint-3.1.4-showcase-1.mp4"
     static let mediaSHA256 = "88031b2b48708b8eb96248fef1143432a0600382b59ad5ea39e0746af27ab9e8"
 
-    static var remoteMediaURL: URL {
-        URL(string: "https://github.com/vorssaint/vorssaint-utils/releases/download/v\(releaseVersion)/\(mediaAssetName)")!
-    }
+    /// This fork hosts no showcase media and must not fetch upstream's: that
+    /// asset lives in the upstream project's releases and is branded for it.
+    /// Nil disables the download; the surface renders its failed state, which
+    /// simply shows no video.
+    static var remoteMediaURL: URL? { nil }
 
     static var localDeveloperMediaURL: URL? {
         guard AppInfo.isDeveloperBuild else { return nil }
@@ -87,6 +89,11 @@ final class UpdateShowcaseMediaLoader: ObservableObject {
         }
         try? FileManager.default.removeItem(at: cached)
 
+        guard let remoteURL = UpdateShowcaseInfo.remoteMediaURL else {
+            state = .failed
+            return
+        }
+
         state = .loading
         // The checksum is verified after the download, so it cannot stop a
         // response from filling the disk on the way there; the byte ceiling
@@ -131,7 +138,7 @@ final class UpdateShowcaseMediaLoader: ObservableObject {
         configuration.timeoutIntervalForResource = 120
         let session = URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
         self.session = session
-        session.dataTask(with: UpdateShowcaseInfo.remoteMediaURL).resume()
+        session.dataTask(with: remoteURL).resume()
     }
 
     func cancel() {
