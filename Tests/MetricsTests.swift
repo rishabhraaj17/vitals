@@ -12468,7 +12468,7 @@ struct MetricsTests {
         ### Fixed
         - Update preview stays focused on changes.
 
-        Signed with an Apple Developer ID and notarized by Apple, so it downloads and opens normally. Requires macOS 14 or later. Open the .dmg below and drag Vorssaint to Applications.
+        Signed with an Apple Developer ID and notarized by Apple, so it downloads and opens normally. Requires macOS 14 or later. Open the .dmg below and drag Vitals to Applications.
         """
         let inAppUpdateBody = ReleaseNotes.inAppUpdateNotes(from: githubReleaseBodyWithFooter) ?? ""
         expect(!inAppUpdateBody.contains("Signed with an Apple Developer ID"),
@@ -13459,7 +13459,7 @@ struct MetricsTests {
         expect(bundleLocalizations.contains("tr"), "Info.plist declares Turkish as a bundle localization")
         expect(bundleLocalizations.contains("ko"), "Info.plist declares Korean as a bundle localization")
         let baseAudioPrompt = infoPlist?["NSAudioCaptureUsageDescription"] as? String ?? ""
-        expect(baseAudioPrompt.contains("Vorssaint uses each app's audio"),
+        expect(baseAudioPrompt.contains("Vitals uses each app's audio"),
                "base audio permission prompt is an English fallback")
         let organizerFolderPromptKeys = [
             "NSDesktopFolderUsageDescription", "NSDocumentsFolderUsageDescription",
@@ -19145,7 +19145,7 @@ struct MetricsTests {
 
         // Muting every microphone, not just the one the Mac is set to: an app
         // pointed at a device of its own has to go silent too.
-        expect(MicMuteSupport.isOwnDevice(name: "Vorssaint Mixer")
+        expect(MicMuteSupport.isOwnDevice(name: "Vitals Mixer")
                 && !MicMuteSupport.isOwnDevice(name: "MacBook Air Microphone"),
                "the mute skips the app's own mixing device and no other")
         expect(!MicMuteSupport.shouldSaveVolume(nil)

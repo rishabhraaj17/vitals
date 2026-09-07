@@ -41,12 +41,6 @@ struct FeedbackDiagnostics: Codable {
     }()
 }
 
-private struct FeedbackSubmission: Codable {
-    let kind: FeedbackKind
-    let message: String
-    let diagnostics: FeedbackDiagnostics?
-}
-
 enum FeedbackError: Error {
     case unavailable
     case rateLimited
@@ -58,74 +52,14 @@ enum FeedbackError: Error {
 final class FeedbackService {
     static let shared = FeedbackService()
 
-    private let endpoint = URL(string: "https://screenshots.vorssaint.com/v1/feedback")!
-    private let session: URLSession
-    private let encoder = JSONEncoder()
-
-    private init() {
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.urlCache = nil
-        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
-        configuration.httpCookieAcceptPolicy = .never
-        configuration.httpShouldSetCookies = false
-        configuration.timeoutIntervalForRequest = 20
-        configuration.timeoutIntervalForResource = 30
-        configuration.waitsForConnectivity = false
-        session = URLSession(configuration: configuration)
-    }
+    private init() {}
 
     func submit(kind: FeedbackKind,
                 message: String,
                 diagnostics: FeedbackDiagnostics?) async throws {
         // This fork runs no feedback service of its own and must never send
-        // reports to upstream's (`endpoint` below is upstream's own paid
-        // infrastructure, and feedback about this fork should not land in
-        // their inbox). Submission stays disabled until this fork runs its
-        // own service; the code below is kept only as a record of the wire
-        // format a future self-hosted endpoint would need to accept.
+        // reports to upstream. Submission stays disabled until this fork runs
+        // its own service.
         throw FeedbackError.unavailable
-
-        let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed.utf16.count >= 10, trimmed.utf16.count <= 2_000 else {
-            throw FeedbackError.rejected
-        }
-
-        let body = try encoder.encode(FeedbackSubmission(
-            kind: kind,
-            message: trimmed,
-            diagnostics: diagnostics
-        ))
-        guard body.count <= 8 * 1_024 else { throw FeedbackError.rejected }
-
-        var request = URLRequest(url: endpoint)
-        request.httpMethod = "POST"
-        request.httpBody = body
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue("no-store", forHTTPHeaderField: "Cache-Control")
-
-        let data: Data
-        let response: URLResponse
-        do {
-            (data, response) = try await session.data(for: request)
-        } catch {
-            throw FeedbackError.unavailable
-        }
-        guard data.count <= 16 * 1_024, let http = response as? HTTPURLResponse else {
-            throw FeedbackError.invalidResponse
-        }
-        switch http.statusCode {
-        case 201:
-            guard let payload = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let id = payload["id"] as? String,
-                  id.range(of: "^[A-Za-z0-9_-]{32}$", options: .regularExpression) != nil
-            else { throw FeedbackError.invalidResponse }
-        case 429:
-            throw FeedbackError.rateLimited
-        case 500...599:
-            throw FeedbackError.unavailable
-        default:
-            throw FeedbackError.rejected
-        }
     }
 }
