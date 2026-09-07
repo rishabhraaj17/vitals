@@ -66,7 +66,11 @@ enum KillProcessSupport {
         let lowerPath = path.trimmingCharacters(in: .whitespaces).lowercased()
         let protectedNames: Set<String> = [
             "kernel_task", "launchd", "windowserver", "loginwindow",
-            "vorssaint", "vorssaint (developer)", "vorssaintdeveloper"
+            // Both this fork's own process names and upstream's are protected:
+            // a user may have both installed, and neither should be killable
+            // through this tool.
+            "vorssaint", "vorssaint (developer)", "vorssaintdeveloper",
+            "vitals", "vitals (developer)", "vitalsdeveloper"
         ]
         if protectedNames.contains(lowerName) { return true }
         if lowerPath.hasSuffix("/windowserver") || lowerPath.hasSuffix("/loginwindow") || lowerPath.hasSuffix("/launchd") {

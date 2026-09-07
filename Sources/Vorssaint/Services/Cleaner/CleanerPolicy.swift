@@ -47,7 +47,10 @@ enum CleanerPolicy {
     /// loss, blank Settings panels, service sign outs, plugin licensing),
     /// each learned the hard way by the cleaners that came before.
     private static let hiddenCachePrefixes = [
-        "com.vorssaint",
+        // Both this fork's own bundle id and upstream's stay hidden: a user
+        // may still have Vorssaint installed, and this app must not surface
+        // its data as something to clean either.
+        "com.vorssaint", "com.rishabhraaj17.vitals",
         "CloudKit", "com.apple.bird",
         "com.apple.coreaudio", "com.apple.audio.", "coreaudiod",
         "com.apple.systempreferences", "com.apple.controlcenter",

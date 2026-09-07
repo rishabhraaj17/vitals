@@ -189,13 +189,13 @@ final class ScreenCaptureService: ObservableObject {
             for: options.selectedTool,
             screenshotFreeze: defaults.bool(forKey: DefaultsKey.screenshotFreeze),
             screenshotIncludePointer: defaults.bool(forKey: DefaultsKey.screenshotIncludePointer),
-            screenshotHideVorssaintWindows: defaults.bool(
-                forKey: DefaultsKey.screenshotHideVorssaintWindows))
+            screenshotHideVitalsWindows: defaults.bool(
+                forKey: DefaultsKey.screenshotHideVitalsWindows))
         let controller = ScreenshotSelectionController(
             freeze: policy.freeze,
             includePointer: policy.includePointer,
             showLastRegion: defaults.bool(forKey: DefaultsKey.screenshotShowLastRegion),
-            hideVorssaintWindows: policy.hideVorssaintWindows,
+            hideVitalsWindows: policy.hideVitalsWindows,
             protectedWindowIDs: {
                 AppFeature.screenshot.isAvailable
                     ? ScreenshotService.shared.protectedWindowIDsForCapture

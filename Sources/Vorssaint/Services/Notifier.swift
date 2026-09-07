@@ -7,12 +7,12 @@ import UserNotifications
 
 enum Notifier {
     static let whatsAppOrganizerUndoActionIdentifier =
-        "com.vorssaint.notification.whatsapp-organizer.undo"
+        "com.rishabhraaj17.vitals.notification.whatsapp-organizer.undo"
     private static let whatsAppOrganizerTransactionKey =
-        "com.vorssaint.notification.whatsapp-organizer.transaction"
+        "com.rishabhraaj17.vitals.notification.whatsapp-organizer.transaction"
     private static let whatsAppOrganizerCategoryIdentifier =
-        "com.vorssaint.notification.whatsapp-organizer"
-    private static let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "vorssaint",
+        "com.rishabhraaj17.vitals.notification.whatsapp-organizer"
+    private static let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "vitals",
                                     category: "notifications")
 
     static func requestPermission() {

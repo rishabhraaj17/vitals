@@ -2153,7 +2153,7 @@ struct MetricsTests {
                "keep awake shortcut defaults to Ctrl+Opt+Cmd+K")
         expect(registeredDefaults[DefaultsKey.keepAwakeIconTint] as? String == KeepAwakeIconTint.orange.rawValue,
                "keep-awake active icon tint defaults to orange")
-        expect(registeredDefaults[DefaultsKey.keepAwakeActiveIcon] as? String == KeepAwakeActiveIcon.vorssaint.rawValue,
+        expect(registeredDefaults[DefaultsKey.keepAwakeActiveIcon] as? String == KeepAwakeActiveIcon.vitals.rawValue,
                "keep-awake active icon defaults to the Vorssaint glyph")
         expect(registeredDefaults[DefaultsKey.keepAwakeMouseJiggleEnabled] as? Bool == false,
                "Keep Awake mouse movement is opt-in")
@@ -2169,7 +2169,7 @@ struct MetricsTests {
                "invalid keep-awake active icon tint falls back to orange")
         expect(Defaults.sanitizedKeepAwakeActiveIcon("coffee") == .coffee,
                "valid keep-awake active icon is preserved")
-        expect(Defaults.sanitizedKeepAwakeActiveIcon("bad") == .vorssaint,
+        expect(Defaults.sanitizedKeepAwakeActiveIcon("bad") == .vitals,
                "invalid keep-awake active icon falls back to the Vorssaint glyph")
         expect(KeepAwakeActiveIcon.eye.systemSymbolName == "eye.fill",
                "keep-awake eye option maps to its menu bar symbol")
@@ -3473,20 +3473,15 @@ struct MetricsTests {
                && !SupportUpdateIntroInfo.shouldShow(appVersion: "3.3.1", lastSeenVersion: nil)
                && !SupportUpdateIntroInfo.shouldShow(appVersion: "3.3.3", lastSeenVersion: nil),
                "support prompt never leaks into another release")
-        expect(SupportUpdateIntroStep.support.next == .social
-               && SupportUpdateIntroStep.social.next == nil,
-               "update intro moves from support to social updates")
-        expect(SupportUpdateIntroStep.support.previous == nil
-               && SupportUpdateIntroStep.social.previous == .support,
-               "update intro navigates back without closing")
-        expect(SupportUpdateIntroStep.allCases == [.support, .social],
-               "update intro page indicators follow the navigation order")
-        expect(AppInfo.discordURL.absoluteString == "https://discord.gg/M6BwWH4BJp",
-               "the community action uses the permanent Discord invitation")
-        expect(AppInfo.coffeeURL.absoluteString == "https://buymeacoffee.com/vorssaint",
-               "financial support uses Buy Me a Coffee")
-        expect(AppInfo.socialURL.absoluteString == "https://x.com/vorssaint",
-               "social previews keep the official X profile")
+        expect(SupportUpdateIntroStep.support.next == nil,
+               "this fork dropped the follow-on social step; support is the only page")
+        expect(SupportUpdateIntroStep.support.previous == nil,
+               "the sole remaining step has nothing to navigate back to")
+        expect(SupportUpdateIntroStep.allCases == [.support],
+               "update intro page indicators show only the remaining step")
+        // AppInfo.websiteURL, .coffeeURL, .discordURL and .socialURL do not
+        // exist in this fork: those pointed at the upstream maintainer's own
+        // accounts, and this fork must not send its users or donations there.
         // AppInfo.version falls back to "dev" in this bare harness, so read
         // the plist the shipped app will actually carry. The pin is a
         // per-release decision: this check fails on every version bump so the
@@ -3918,10 +3913,10 @@ struct MetricsTests {
             statusDefaults.removePersistentDomain(forName: statusPlacementSuite)
             expect(StatusItemPlacementSupport.placementGeneration(in: statusDefaults) == 0,
                    "initial placement generation is 0")
-            expect(StatusItemPlacementSupport.mainAutosaveName(in: statusDefaults) == "VorssaintMenuBarItem",
+            expect(StatusItemPlacementSupport.mainAutosaveName(in: statusDefaults) == "VitalsMenuBarItem",
                    "generation 0 uses base autosave name")
 
-            let legacyKey = "NSStatusItem Preferred Position VorssaintMenuBarItem"
+            let legacyKey = "NSStatusItem Preferred Position VitalsMenuBarItem"
             statusDefaults.set(64.0, forKey: legacyKey)
             StatusItemPlacementSupport.sanitizeStalePlacement(in: statusDefaults)
             expect(statusDefaults.object(forKey: legacyKey) == nil,
@@ -3934,9 +3929,9 @@ struct MetricsTests {
 
             StatusItemPlacementSupport.bumpPlacementGeneration(in: statusDefaults)
             let gen1Name = StatusItemPlacementSupport.mainAutosaveName(in: statusDefaults)
-            expect(gen1Name == "VorssaintMenuBarItem.1",
+            expect(gen1Name == "VitalsMenuBarItem.1",
                    "bumped generation produces numbered autosave name")
-            expect(statusDefaults.object(forKey: "NSStatusItem Preferred Position VorssaintMenuBarItem.1") == nil,
+            expect(statusDefaults.object(forKey: "NSStatusItem Preferred Position VitalsMenuBarItem.1") == nil,
                    "bumpPlacementGeneration does not seed any hardcoded preferred position")
             statusDefaults.removePersistentDomain(forName: statusPlacementSuite)
         }
@@ -4777,8 +4772,9 @@ struct MetricsTests {
         expect(CleanerSupport.isProtectedBundleID("com.apple.Music")
                && CleanerSupport.isProtectedBundleID("com.apple")
                && CleanerSupport.isProtectedBundleID("group.com.apple.notes")
-               && CleanerSupport.isProtectedBundleID("com.vorssaint.utils"),
-               "system domains and this app can never be junk owners")
+               && CleanerSupport.isProtectedBundleID("com.vorssaint.utils")
+               && CleanerSupport.isProtectedBundleID("com.rishabhraaj17.vitals"),
+               "system domains, upstream's bundle id and this app's own can never be junk owners")
         expect(!CleanerSupport.isProtectedBundleID("com.vendor.editor"),
                "third party identifiers are eligible for the leftover check")
         expect(UninstallerSupport.verifiedBundleID("com.vendor.editor") == "com.vendor.editor"
@@ -4791,8 +4787,9 @@ struct MetricsTests {
                && UninstallerSupport.verifiedBundleID("plain-name") == nil
                && UninstallerSupport.verifiedBundleID("com.vendor../escape") == nil
                && UninstallerSupport.verifiedBundleID("com.vorssaint.utils") == nil
+               && UninstallerSupport.verifiedBundleID("com.rishabhraaj17.vitals") == nil
                && UninstallerSupport.verifiedBundleID("com.apple.system") == nil,
-               "malformed, protected and current app identifiers never enter uninstall paths")
+               "malformed, protected, upstream's and this app's own identifiers never enter uninstall paths")
         let uninstallAppURL = URL(fileURLWithPath: "/Applications/Editor.app")
         expect(UninstallerSupport.isNestedBundle(
                    URL(fileURLWithPath: "/Applications/Editor.app/Contents/Library/LoginItems/Background.app"),
@@ -10826,9 +10823,11 @@ struct MetricsTests {
                "an accidental double-click never hides and immediately reopens the app")
         expect(DockClickSupport.isOwnBundleIdentifier("com.vorssaint.utils")
                 && DockClickSupport.isOwnBundleIdentifier("com.vorssaint.utils.dev")
+                && DockClickSupport.isOwnBundleIdentifier("com.rishabhraaj17.vitals")
+                && DockClickSupport.isOwnBundleIdentifier("com.rishabhraaj17.vitals.dev")
                 && !DockClickSupport.isOwnBundleIdentifier("com.example.editor")
                 && !DockClickSupport.isOwnBundleIdentifier(nil),
-               "Dock clicks never target either build of this app")
+               "Dock clicks never target any build of this app or upstream's")
 
         expect(DockClickSupport.repeatDecision(lastAction: nil, elapsed: nil) == .deriveFromState,
                "dock click derives the first click from window state")
@@ -13608,10 +13607,10 @@ struct MetricsTests {
         // that is registered under the other name, and fan control would just
         // never answer.
         let helperTemplate = (try? String(
-            contentsOfFile: "Resources/com.vorssaint.utils.fan-control.plist",
+            contentsOfFile: "Resources/com.rishabhraaj17.vitals.fan-control.plist",
             encoding: .utf8)) ?? ""
         expect(!helperTemplate.isEmpty, "the helper template reads back")
-        let releaseHelperID = "com.vorssaint.utils.fan-control"
+        let releaseHelperID = "com.rishabhraaj17.vitals.fan-control"
         let mentions = helperTemplate.components(separatedBy: releaseHelperID).count - 1
         expect(mentions == 3,
                "the helper template names the release service exactly where the build rewrites it (\(mentions))")
@@ -17231,20 +17230,20 @@ struct MetricsTests {
 
         let ownScreenshotWindows: Set<CGWindowID> = [11, 12, 13]
         let protectedScreenshotWindows: Set<CGWindowID> = [12, 99]
-        expect(Defaults.registeredDefaults[DefaultsKey.screenshotHideVorssaintWindows]
+        expect(Defaults.registeredDefaults[DefaultsKey.screenshotHideVitalsWindows]
                 as? Bool == true,
                "screenshots hide Vorssaint windows by default")
         expect(SettingsBackupSupport.exportKeys().contains(
-            DefaultsKey.screenshotHideVorssaintWindows),
+            DefaultsKey.screenshotHideVitalsWindows),
                "the screenshot window visibility preference travels in backups")
         expect(ScreenshotCapturePolicy.excludedWindowIDs(
-            hideVorssaintWindows: true,
+            hideVitalsWindows: true,
             ownWindowIDs: ownScreenshotWindows,
             protectedWindowIDs: protectedScreenshotWindows
         ) == ownScreenshotWindows,
         "screenshot hiding Vorssaint excludes every own window")
         expect(ScreenshotCapturePolicy.excludedWindowIDs(
-            hideVorssaintWindows: false,
+            hideVitalsWindows: false,
             ownWindowIDs: ownScreenshotWindows,
             protectedWindowIDs: protectedScreenshotWindows
         ) == [12],
@@ -17252,25 +17251,25 @@ struct MetricsTests {
         expect(ScreenshotCapturePolicy.canPickWindow(
             7,
             isOwnWindow: false,
-            hideVorssaintWindows: true,
+            hideVitalsWindows: true,
             protectedWindowIDs: protectedScreenshotWindows
         ), "screenshot can always pick an ordinary external window")
         expect(!ScreenshotCapturePolicy.canPickWindow(
             11,
             isOwnWindow: true,
-            hideVorssaintWindows: true,
+            hideVitalsWindows: true,
             protectedWindowIDs: protectedScreenshotWindows
         ), "screenshot cannot pick a Vorssaint window while hiding them")
         expect(ScreenshotCapturePolicy.canPickWindow(
             11,
             isOwnWindow: true,
-            hideVorssaintWindows: false,
+            hideVitalsWindows: false,
             protectedWindowIDs: protectedScreenshotWindows
         ), "screenshot can pick an ordinary Vorssaint window when visible")
         expect(!ScreenshotCapturePolicy.canPickWindow(
             12,
             isOwnWindow: true,
-            hideVorssaintWindows: false,
+            hideVitalsWindows: false,
             protectedWindowIDs: protectedScreenshotWindows
         ), "screenshot cannot pick its own protected capture UI")
 
@@ -17862,32 +17861,32 @@ struct MetricsTests {
             for: .screenshot,
             screenshotFreeze: false,
             screenshotIncludePointer: true,
-            screenshotHideVorssaintWindows: true)
+            screenshotHideVitalsWindows: true)
         let recorderPolicy = ScreenshotSupport.unifiedCapturePolicy(
             for: .recording,
             screenshotFreeze: false,
             screenshotIncludePointer: true,
-            screenshotHideVorssaintWindows: true)
+            screenshotHideVitalsWindows: true)
         let textPolicy = ScreenshotSupport.unifiedCapturePolicy(
             for: .text,
             screenshotFreeze: false,
             screenshotIncludePointer: true,
-            screenshotHideVorssaintWindows: true)
+            screenshotHideVitalsWindows: true)
         expect(liveScreenshotPolicy == .init(freeze: false, includePointer: true,
-                                             hideVorssaintWindows: true,
+                                             hideVitalsWindows: true,
                                              usesGeometry: false)
                 && recorderPolicy == .init(freeze: true, includePointer: false,
-                                           hideVorssaintWindows: false,
+                                           hideVitalsWindows: false,
                                            usesGeometry: true)
                 && textPolicy == .init(freeze: true, includePointer: false,
-                                       hideVorssaintWindows: true,
+                                       hideVitalsWindows: true,
                                        usesGeometry: false),
                "switching capture mode rebuilds the frozen frame, pointer and window policy")
         let colorPolicy = ScreenshotSupport.unifiedCapturePolicy(
             for: .color,
             screenshotFreeze: false,
             screenshotIncludePointer: true,
-            screenshotHideVorssaintWindows: true)
+            screenshotHideVitalsWindows: true)
         expect(textPolicy.sharesSource(with: colorPolicy)
                 && !textPolicy.sharesSource(with: recorderPolicy)
                 && !textPolicy.sharesSource(with: liveScreenshotPolicy),
@@ -24696,10 +24695,10 @@ struct MetricsTests {
                "an unlearned category preserves its useful catalog order")
 
         let officialHabitService = CommandBarQueryHabits.installationKeyService(
-            bundleID: "com.vorssaint.utils")
+            bundleID: "com.rishabhraaj17.vitals")
         let developerHabitService = CommandBarQueryHabits.installationKeyService(
-            bundleID: "com.vorssaint.utils.dev")
-        expect(officialHabitService == "com.vorssaint.utils.command-bar-query-habits"
+            bundleID: "com.rishabhraaj17.vitals.dev")
+        expect(officialHabitService == "com.rishabhraaj17.vitals.command-bar-query-habits"
                 && officialHabitService != developerHabitService,
                "uninstalling one app variant cannot target the other variant's query key")
 

@@ -70,7 +70,7 @@ enum BundleMigration {
         /bin/rm -f "$0"
         """
         let scriptURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("vorssaint-rename-\(pid)-\(UUID().uuidString).sh")
+            .appendingPathComponent("vitals-rename-\(pid)-\(UUID().uuidString).sh")
         do {
             try script.write(to: scriptURL, atomically: true, encoding: .utf8)
             // Its own session: the script waits for this app to exit before it

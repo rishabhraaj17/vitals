@@ -293,7 +293,7 @@ enum RadialNowPlayingApplication {
 /// missing script or library, a failed run, a timeout and malformed output
 /// all read as an empty playback session.
 private final class MediaRemoteNowPlayingBridge {
-    private let queue = DispatchQueue(label: "com.vorssaint.radial-now-playing", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "com.rishabhraaj17.vitals.radial-now-playing", qos: .userInitiated)
     /// 2 s: a cold perl load measured 500 ms with no session playing, and a
     /// real reply adds the MediaRemote round trip plus up to 16 MB of base64
     /// artwork through the pipe. A kill reads as nothing playing, so a deadline
@@ -305,7 +305,7 @@ private final class MediaRemoteNowPlayingBridge {
     func fetch(completion: @escaping (RadialNowPlayingSnapshot?) -> Void) {
         guard let script = Bundle.main.url(forResource: "now-playing", withExtension: "pl"),
               let library = Bundle.main.privateFrameworksURL?
-                .appendingPathComponent("libVorssaintNowPlaying.dylib"),
+                .appendingPathComponent("libVitalsNowPlaying.dylib"),
               FileManager.default.fileExists(atPath: library.path) else {
             completion(nil)
             return

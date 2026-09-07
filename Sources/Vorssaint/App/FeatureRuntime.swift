@@ -58,7 +58,7 @@ final class FeatureRuntime: ObservableObject {
         // Nothing is quit until the helper is running: without it, terminating
         // would close the app instead of restarting it.
         guard (try? DetachedProcess.spawn(
-            "/bin/sh", ["-c", script, "vorssaint-relaunch", pid, path])) != nil
+            "/bin/sh", ["-c", script, "vitals-relaunch", pid, path])) != nil
         else { return }
         NSApp.terminate(nil)
     }

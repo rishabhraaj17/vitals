@@ -845,7 +845,7 @@ enum CommandBarQueryHabits {
     }
 
     private static let keyService = installationKeyService(
-        bundleID: Bundle.main.bundleIdentifier ?? "com.vorssaint.utils")
+        bundleID: Bundle.main.bundleIdentifier ?? "com.rishabhraaj17.vitals")
     private static let keyAccount = "hmac-key"
 
     private static let installationKeyCache = CommandBarQueryHabitKeyCache {
@@ -988,7 +988,7 @@ final class CommandBarQueryHabitKeyCache {
     private var readinessCallbacks: [() -> Void] = []
 
     init(queue: DispatchQueue = DispatchQueue(
-            label: "org.vorssaint.command-bar-query-habit-key",
+            label: "org.rishabhraaj17.vitals.command-bar-query-habit-key",
             qos: .utility),
          load: @escaping () -> Data?) {
         self.queue = queue

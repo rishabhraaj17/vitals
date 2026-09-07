@@ -91,13 +91,13 @@ final class RecorderSystemAudioTap: @unchecked Sendable {
     /// Destroying a device or a tap can park inside a broken audio path, so
     /// it never happens on a queue anything waits for. Serial, so the device
     /// that hosts a tap is always gone before the tap itself.
-    private static let teardownQueue = DispatchQueue(label: "com.vorssaint.recorder.systemaudio.teardown",
+    private static let teardownQueue = DispatchQueue(label: "com.rishabhraaj17.vitals.recorder.systemaudio.teardown",
                                                      qos: .utility)
 
     /// The tap, or nothing when the audio system refuses one.
     static func make() async -> RecorderSystemAudioTap? {
         guard #available(macOS 14.4, *) else { return nil }
-        let queue = DispatchQueue(label: "com.vorssaint.recorder.systemaudio",
+        let queue = DispatchQueue(label: "com.rishabhraaj17.vitals.recorder.systemaudio",
                                   qos: .userInitiated)
         return await withCheckedContinuation { continuation in
             queue.async {
@@ -111,7 +111,7 @@ final class RecorderSystemAudioTap: @unchecked Sendable {
         self.queue = queue
         guard let ownProcess = Self.ownProcessObject() else { return nil }
         let description = CATapDescription(stereoGlobalTapButExcludeProcesses: [ownProcess])
-        description.name = "Vorssaint Recorder"
+        description.name = "Vitals Recorder"
         description.isPrivate = true
         var tapID = AudioObjectID(0)
         guard AudioHardwareCreateProcessTap(description, &tapID) == noErr, tapID != 0 else {
@@ -179,7 +179,7 @@ final class RecorderSystemAudioTap: @unchecked Sendable {
         guard aggregateID == 0, let clock,
               let hostUID = Self.hostDeviceUID() else { return }
         let aggregate: [String: Any] = [
-            kAudioAggregateDeviceNameKey: "Vorssaint Recorder",
+            kAudioAggregateDeviceNameKey: "Vitals Recorder",
             kAudioAggregateDeviceUIDKey: UUID().uuidString,
             kAudioAggregateDeviceIsPrivateKey: true,
             kAudioAggregateDeviceMainSubDeviceKey: hostUID,

@@ -121,7 +121,7 @@ final class AppSwitcher: ObservableObject {
 
     /// Enumeration touches every regular app through Accessibility, so it runs
     /// away from the event tap on one serial queue.
-    private let enumerationQueue = DispatchQueue(label: "com.vorssaint.switcher.enumeration",
+    private let enumerationQueue = DispatchQueue(label: "com.rishabhraaj17.vitals.switcher.enumeration",
                                                   qos: .userInitiated)
     private var pendingShow: DispatchWorkItem?
     /// True once the user moved the selection themselves.
@@ -339,7 +339,7 @@ final class AppSwitcher: ObservableObject {
             let thread = Thread { [weak self] in
                 self?.runEventTap()
             }
-            thread.name = "Vorssaint Switcher"
+            thread.name = "Vitals Switcher"
             thread.qualityOfService = .userInteractive
             tapThread = thread
             return thread

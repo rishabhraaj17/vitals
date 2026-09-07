@@ -15,7 +15,7 @@ final class GeneralPasteboardAccess {
 
     private let queue: DispatchQueue
 
-    init(label: String = "Vorssaint.Pasteboard.general") {
+    init(label: String = "Vitals.Pasteboard.general") {
         queue = DispatchQueue(label: label, qos: .utility)
     }
 

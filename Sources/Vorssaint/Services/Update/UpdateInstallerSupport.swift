@@ -63,7 +63,14 @@ enum UpdateInstallerSupport {
         }
         while kill -0 "$PID" 2>/dev/null; do sleep 0.3; done
         note fail-dmg-verify
-        DMG_VERIFY_REQ='anchor apple generic and certificate leaf[subject.OU] = "3D485NHW29"'
+        # "3D485NHW29" was the upstream maintainer's Apple Team ID. This fork
+        # has no Apple Developer Program membership and is self-signed, so
+        # there is no team id to verify a downloaded build against; leaving
+        # this empty means the requirement below can never be satisfied, so
+        # self-update verification always fails closed rather than trusting
+        # an unverifiable download. Self-update is effectively disabled until
+        # a real team id exists — that is correct for a self-signed fork.
+        DMG_VERIFY_REQ='anchor apple generic and certificate leaf[subject.OU] = ""'
         if ! /usr/bin/codesign -v --strict -R="$DMG_VERIFY_REQ" "$DMG" 2>/dev/null; then
             /bin/rm -f "$DMG"
             finalize
@@ -113,7 +120,7 @@ enum UpdateInstallerSupport {
                     elif /usr/sbin/spctl -a -t exec "$STAGE" >/dev/null 2>&1; then
                         GATEKEEPER_OK=1
                     fi
-                    VERIFY_REQ='identifier "com.vorssaint.utils" and anchor apple generic and certificate leaf[subject.OU] = "3D485NHW29"'
+                    VERIFY_REQ='identifier "com.rishabhraaj17.vitals" and anchor apple generic and certificate leaf[subject.OU] = ""'
                     note fail-verify
                     if /usr/bin/codesign -v --deep --strict -R="$VERIFY_REQ" "$STAGE" 2>/dev/null \
                         && [ "$GATEKEEPER_OK" = 1 ]; then
@@ -181,7 +188,7 @@ enum UpdateInstallerSupport {
             .map(shellSingleQuoted)
             .joined(separator: " ")
         return DetachedProcess.detachedShellCommand(
-            quotedArgv: "/bin/sh -c \(script) vorssaint-installer \(args)")
+            quotedArgv: "/bin/sh -c \(script) vitals-installer \(args)")
     }
 
     /// Whether the next install attempt should go straight through the admin

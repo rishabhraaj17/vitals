@@ -230,9 +230,9 @@ final class ShelfService: ObservableObject {
     private var edgePeekEndWork: DispatchWorkItem?
 
     private let tempDir: URL = {
-        let id = Bundle.main.bundleIdentifier ?? "com.vorssaint.utils"
+        let id = Bundle.main.bundleIdentifier ?? "com.rishabhraaj17.vitals"
         let dir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("VorssaintShelf", isDirectory: true)
+            .appendingPathComponent("VitalsShelf", isDirectory: true)
             .appendingPathComponent(id, isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
@@ -248,7 +248,7 @@ final class ShelfService: ObservableObject {
     /// Writes coalesce per mutation cycle already; the JSON encode itself
     /// also stays off the main thread (a full shelf of large texts is real
     /// work), serialized so blobs land in mutation order.
-    private static let persistQueue = DispatchQueue(label: "com.vorssaint.utils.shelf-persist",
+    private static let persistQueue = DispatchQueue(label: "com.rishabhraaj17.vitals.shelf-persist",
                                                     qos: .utility)
 
     private var persistScheduled = false
@@ -1992,7 +1992,7 @@ final class ShelfService: ObservableObject {
 
     private func cleanLegacyTemporaryFiles() {
         let legacyDir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("VorssaintShelf", isDirectory: true)
+            .appendingPathComponent("VitalsShelf", isDirectory: true)
         guard legacyDir != tempDir,
               let entries = try? FileManager.default.contentsOfDirectory(at: legacyDir,
                                                                          includingPropertiesForKeys: nil)

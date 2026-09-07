@@ -113,7 +113,7 @@ enum ScreenshotSupport {
     struct UnifiedCapturePolicy: Equatable {
         let freeze: Bool
         let includePointer: Bool
-        let hideVorssaintWindows: Bool
+        let hideVitalsWindows: Bool
         let usesGeometry: Bool
 
         /// Two tools can want the same photograph and still do different
@@ -122,19 +122,19 @@ enum ScreenshotSupport {
         func sharesSource(with other: UnifiedCapturePolicy) -> Bool {
             freeze == other.freeze
                 && includePointer == other.includePointer
-                && hideVorssaintWindows == other.hideVorssaintWindows
+                && hideVitalsWindows == other.hideVitalsWindows
         }
     }
 
     static func unifiedCapturePolicy(for tool: ScreenCaptureTool,
                                      screenshotFreeze: Bool,
                                      screenshotIncludePointer: Bool,
-                                     screenshotHideVorssaintWindows: Bool)
+                                     screenshotHideVitalsWindows: Bool)
         -> UnifiedCapturePolicy {
         UnifiedCapturePolicy(
             freeze: tool == .screenshot ? screenshotFreeze : true,
             includePointer: tool == .screenshot && screenshotIncludePointer,
-            hideVorssaintWindows: tool != .recording && screenshotHideVorssaintWindows,
+            hideVitalsWindows: tool != .recording && screenshotHideVitalsWindows,
             usesGeometry: tool == .recording)
     }
 

@@ -39,8 +39,12 @@ struct ScreenshotShareResponse: Decodable {
 }
 
 enum ScreenshotSharingSupport {
+    // Upstream's own paid image-sharing host. This fork runs no such service
+    // and is not authorized to use upstream's; kept only as the fallback value
+    // callers compare against to detect "no sharing endpoint configured" (see
+    // ScreenshotShareService.createLink), never dialed directly by this fork.
     static let productionEndpoint = URL(string: "https://screenshots.vorssaint.com")!
-    static let developerBundleIdentifier = "com.vorssaint.utils.dev"
+    static let developerBundleIdentifier = "com.rishabhraaj17.vitals.dev"
     static let maximumUploadBytes = 25 * 1_024 * 1_024
 
     static func endpoint(bundleIdentifier: String?, developerOverride: String?) -> URL {
