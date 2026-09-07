@@ -8,6 +8,10 @@ import IOKit
 /// Read-only diagnostic. Lists every temperature, power and fan key this Mac's
 /// SMC exposes, so a sensor map is written from what the hardware reports
 /// rather than from what a key list on the internet claims. Never writes.
+///
+/// Compiles against SMCClient.swift, which itself calls into SMCValueCodec
+/// (FanControlSupport.swift) and TemperatureSensorSelector.swift. All four
+/// files must be passed to swiftc together; see the plan for the command.
 @main
 struct DumpSMCKeys {
     static func main() {
@@ -27,35 +31,9 @@ struct DumpSMCKeys {
         let keys = client.keys { $0.hasPrefix("T") || $0.hasPrefix("P") || $0.hasPrefix("F") }
         print("# key\ttype\tsize\tvalue")
         for key in keys.sorted(by: { $0.name < $1.name }) {
-            let decoded = client.readBytes(key).flatMap { decode($0, type: key.dataType) }
+            let decoded = client.readValue(key)
             let shown = decoded.map { String(format: "%.2f", $0) } ?? "-"
             print("\(key.name)\t\(key.dataType)\t\(key.dataSize)\t\(shown)")
-        }
-    }
-
-    /// Mirrors SMCValueCodec.decode for the types the SMC actually uses for
-    /// these keys. Duplicated on purpose to keep this tool dependency-free.
-    static func decode(_ bytes: [UInt8], type: String) -> Double? {
-        switch type {
-        case "flt " where bytes.count == 4:
-            let bits = UInt32(bytes[0]) | UInt32(bytes[1]) << 8
-                | UInt32(bytes[2]) << 16 | UInt32(bytes[3]) << 24
-            let value = Double(Float32(bitPattern: bits))
-            return value.isFinite ? value : nil
-        case "fpe2" where bytes.count == 2:
-            return Double(UInt16(bytes[0]) << 8 | UInt16(bytes[1])) / 4.0
-        case "sp78" where bytes.count == 2:
-            let raw = UInt16(bytes[0]) << 8 | UInt16(bytes[1])
-            return Double(Int16(bitPattern: raw)) / 256.0
-        case "ui8 " where bytes.count == 1:
-            return Double(bytes[0])
-        case "ui16" where bytes.count == 2:
-            return Double(UInt16(bytes[0]) << 8 | UInt16(bytes[1]))
-        case "ui32" where bytes.count == 4:
-            return Double(UInt32(bytes[0]) << 24 | UInt32(bytes[1]) << 16
-                | UInt32(bytes[2]) << 8 | UInt32(bytes[3]))
-        default:
-            return nil
         }
     }
 }

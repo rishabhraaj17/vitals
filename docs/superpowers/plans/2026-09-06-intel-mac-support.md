@@ -52,9 +52,9 @@ The assistant produces every edit and stops. The user runs `./build.sh --test`, 
 
 | File | Status | Responsibility |
 |---|---|---|
-| `Tools/DumpSMCKeys.swift` | Create | Standalone read-only diagnostic. Prints every `T*`/`P*`/`F*` SMC key with type, size, and decoded value. Not part of the app build. Matches the existing standalone-tool pattern (`Tools/MakeIcon.swift`, `Tools/MakeGIF.swift`). |
+| `Tools/DumpSMCKeys.swift` | Create | Read-only diagnostic. Prints every `T*`/`P*`/`F*` SMC key with type, size, and decoded value. Not part of the app build, but not standalone either — it compiles against `SMCClient.swift`, `FanControlSupport.swift`, and `TemperatureSensorSelector.swift` together. Matches the existing standalone-tool pattern (`Tools/MakeIcon.swift`, `Tools/MakeGIF.swift`) in that it ships outside the app target, not in its dependency footprint. |
 | `docs/superpowers/intel-smc-keys.txt` | Create | Captured output of the above. The evidence Tasks 3 and 5 argue from. |
-| `build.sh:62` | Modify | `TARGET` derived from `uname -m` instead of hardcoded arm64. |
+| `build.sh:62` | Modify | `TARGET` derived from a `sysctl -n hw.optional.arm64` hardware check instead of hardcoded arm64. Not `uname -m`, which reports the calling process's architecture and would answer x86_64 under Rosetta on an Apple Silicon Mac. |
 | `Sources/Vorssaint/Services/Metrics/TemperatureSensorSelector.swift` | Modify | Add `.intel` platform, Intel CPU core/auxiliary/GPU key tables, and the shared `isGPUTemperatureKey` classifier. All sensor-key policy stays in this one file. |
 | `Sources/Vorssaint/Services/SystemMonitor/SystemMonitor.swift:902-919` | Modify | Route GPU key collection through the new classifier (2 sites). |
 | `Sources/Vorssaint/Services/FanControl/FanControlHardware.swift:313-323` | Modify | Same, for the fan curve's sensor discovery (2 sites). |
@@ -78,14 +78,16 @@ opens the AppleSMC user client, enumerates keys, and reads them. It never calls
 - Create: `docs/superpowers/intel-smc-keys.txt`
 
 **Interfaces:**
-- Consumes: `SMCClient` from `Sources/Vorssaint/Services/SystemMonitor/SMCClient.swift` — `init?()`, `keys(where: (String) -> Bool) -> [Key]`, `readBytes(_ key: Key) -> [UInt8]?`, and `Key` with `.name: String`, `.dataSize: UInt32`, `.dataType: String`.
+- Consumes: `SMCClient` from `Sources/Vorssaint/Services/SystemMonitor/SMCClient.swift` — `init?()`, `keys(where: (String) -> Bool) -> [Key]`, `readValue(_ key: Key) -> Double?`, and `Key` with `.name: String`, `.dataSize: UInt32`, `.dataType: String`. `readValue` decodes through `SMCValueCodec`, so `FanControlSupport.swift` and `TemperatureSensorSelector.swift` are also compiled in — see Step 2.
 - Produces: a tab-separated dump at `docs/superpowers/intel-smc-keys.txt`. Task 3 reads the `T*` rows; Task 5 reads the `P*` rows; Task 7 reads the `F*` rows.
 
 - [ ] **Step 1: Write the dump tool**
 
-Create `Tools/DumpSMCKeys.swift`. It deliberately carries its own value decoder
-rather than importing `SMCValueCodec` from `FanControlSupport.swift`, so it
-compiles against `SMCClient.swift` alone with no string-table dependencies.
+Create `Tools/DumpSMCKeys.swift`. It decodes values through `SMCClient.readValue`,
+which calls into `SMCValueCodec` (`Sources/Vorssaint/Services/FanControl/FanControlSupport.swift`),
+which in turn requires `Sources/Vorssaint/Services/Metrics/TemperatureSensorSelector.swift`.
+The tool is not standalone: all four files must be passed to `swiftc` together
+(see Step 2). It stays read-only — it never calls `writeValue` or `writeBytes`.
 
 ```swift
 // SPDX-License-Identifier: GPL-3.0-or-later
@@ -98,6 +100,10 @@ import IOKit
 /// Read-only diagnostic. Lists every temperature, power and fan key this Mac's
 /// SMC exposes, so a sensor map is written from what the hardware reports
 /// rather than from what a key list on the internet claims. Never writes.
+///
+/// Compiles against SMCClient.swift, which itself calls into SMCValueCodec
+/// (FanControlSupport.swift) and TemperatureSensorSelector.swift. All four
+/// files must be passed to swiftc together; see the plan for the command.
 @main
 struct DumpSMCKeys {
     static func main() {
@@ -117,35 +123,9 @@ struct DumpSMCKeys {
         let keys = client.keys { $0.hasPrefix("T") || $0.hasPrefix("P") || $0.hasPrefix("F") }
         print("# key\ttype\tsize\tvalue")
         for key in keys.sorted(by: { $0.name < $1.name }) {
-            let decoded = client.readBytes(key).flatMap { decode($0, type: key.dataType) }
+            let decoded = client.readValue(key)
             let shown = decoded.map { String(format: "%.2f", $0) } ?? "-"
             print("\(key.name)\t\(key.dataType)\t\(key.dataSize)\t\(shown)")
-        }
-    }
-
-    /// Mirrors SMCValueCodec.decode for the types the SMC actually uses for
-    /// these keys. Duplicated on purpose to keep this tool dependency-free.
-    static func decode(_ bytes: [UInt8], type: String) -> Double? {
-        switch type {
-        case "flt " where bytes.count == 4:
-            let bits = UInt32(bytes[0]) | UInt32(bytes[1]) << 8
-                | UInt32(bytes[2]) << 16 | UInt32(bytes[3]) << 24
-            let value = Double(Float32(bitPattern: bits))
-            return value.isFinite ? value : nil
-        case "fpe2" where bytes.count == 2:
-            return Double(UInt16(bytes[0]) << 8 | UInt16(bytes[1])) / 4.0
-        case "sp78" where bytes.count == 2:
-            let raw = UInt16(bytes[0]) << 8 | UInt16(bytes[1])
-            return Double(Int16(bitPattern: raw)) / 256.0
-        case "ui8 " where bytes.count == 1:
-            return Double(bytes[0])
-        case "ui16" where bytes.count == 2:
-            return Double(UInt16(bytes[0]) << 8 | UInt16(bytes[1]))
-        case "ui32" where bytes.count == 4:
-            return Double(UInt32(bytes[0]) << 24 | UInt32(bytes[1]) << 16
-                | UInt32(bytes[2]) << 8 | UInt32(bytes[3]))
-        default:
-            return nil
         }
     }
 }
@@ -155,10 +135,11 @@ struct DumpSMCKeys {
 
 ```bash
 mkdir -p build
-swiftc -Onone \
-  -target "$(uname -m)-apple-macosx14.0" \
+swiftc -Onone -target "$(uname -m)-apple-macosx14.0" \
   -sdk "$(xcrun --sdk macosx --show-sdk-path)" \
   Sources/Vorssaint/Services/SystemMonitor/SMCClient.swift \
+  Sources/Vorssaint/Services/FanControl/FanControlSupport.swift \
+  Sources/Vorssaint/Services/Metrics/TemperatureSensorSelector.swift \
   Tools/DumpSMCKeys.swift \
   -o build/dump-smc-keys
 ```
@@ -1289,6 +1270,8 @@ SMC keys and adjust:
 swiftc -Onone -target "$(uname -m)-apple-macosx14.0" \
   -sdk "$(xcrun --sdk macosx --show-sdk-path)" \
   Sources/Vorssaint/Services/SystemMonitor/SMCClient.swift \
+  Sources/Vorssaint/Services/FanControl/FanControlSupport.swift \
+  Sources/Vorssaint/Services/Metrics/TemperatureSensorSelector.swift \
   Tools/DumpSMCKeys.swift -o build/dump-smc-keys
 ./build/dump-smc-keys
 ```
