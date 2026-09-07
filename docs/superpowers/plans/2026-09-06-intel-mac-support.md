@@ -4,7 +4,7 @@
 
 **Goal:** Make Vorssaint build, launch, and read its sensors correctly on a 2019 Intel MacBook Pro, in ascending order of risk, without changing Apple Silicon behaviour.
 
-**Architecture:** One build-script line becomes architecture-derived. `CPUTemperaturePlatform` gains an `.intel` case with explicit SMC key allowlists, mirroring how the file already models each Apple Silicon generation. GPU key classification moves from four inlined `hasPrefix("Tg")` checks into one selector method. `PowerSampler` resolves its keys from a candidate list. Fan control needs no code change at all — its key names are already the Intel set — so it is a verification stage, deliberately placed last because it is the only path that writes to hardware.
+**Architecture:** One build-script line becomes architecture-derived. `CPUTemperaturePlatform` gains an `.intel` case with explicit SMC key allowlists, mirroring how the file already models each Apple Silicon generation. GPU key classification moves from seven inlined `hasPrefix("Tg")` checks into one selector method. `PowerSampler` resolves its keys from a candidate list. Fan control needs no code change at all — its key names are already the Intel set — so it is a verification stage, deliberately placed last because it is the only path that writes to hardware.
 
 **Tech Stack:** Swift 6.3.3 (Xcode Command Line Tools, no Xcode.app), `swiftc` driven directly by `build.sh`, custom `@main` test harness in `Tests/MetricsTests.swift` (no XCTest — `swift test` does not work with Command Line Tools), IOKit `AppleSMC` user client.
 
@@ -297,7 +297,7 @@ git commit -m "chore(build): derive the swift target from the host architecture"
 - Consumes: the `TC*` and `TG*` rows of `docs/superpowers/intel-smc-keys.txt` from Task 1.
 - Produces, all on `enum TemperatureSensorSelector`:
   - `CPUTemperaturePlatform.intel` — new enum case.
-  - `static func isGPUTemperatureKey(_ key: String, platform: CPUTemperaturePlatform) -> Bool` — new; Task 4 replaces four inlined `hasPrefix("Tg")` checks with it.
+  - `static func isGPUTemperatureKey(_ key: String, platform: CPUTemperaturePlatform) -> Bool` — new; Task 4 routes seven inlined `hasPrefix("Tg")` checks through it (an eighth, this method's own `return key.hasPrefix("Tg")`, is the implementation and stays as-is).
   - Existing signatures unchanged: `platform(brandString: String?) -> CPUTemperaturePlatform`, `currentPlatform() -> CPUTemperaturePlatform`, `displayedCPUTemperature(readings: [(key: String, value: Double)], platform: CPUTemperaturePlatform) -> Double?`, `hasCPUCoreSet(platform:) -> Bool`, `isCPUCoreKey(_:platform:) -> Bool`, `isCPUTemperatureKey(_:platform:) -> Bool`.
 
 - [ ] **Step 1: Reconcile the planned key tables against the dump**
@@ -581,11 +581,14 @@ git commit -m "feat(metrics): map intel cpu and gpu temperature sensors"
 ## Task 4: Route GPU key collection through the shared classifier
 
 Task 3 added `isGPUTemperatureKey` but nothing calls it yet, so Intel GPU
-temperature is still blank. This task replaces the four inlined checks.
+temperature is still blank. This task replaces the inlined checks at every
+call site: two in `SystemMonitor`, two in `FanControlHardware`, and three
+more in `SelfTest.swift` that the original count missed.
 
 **Files:**
 - Modify: `Sources/Vorssaint/Services/SystemMonitor/SystemMonitor.swift:902-919`
 - Modify: `Sources/Vorssaint/Services/FanControl/FanControlHardware.swift:313-323`
+- Modify: `Sources/Vorssaint/Support/SelfTest.swift` (health check, `--sensors` key collection, and its component classification)
 
 **Interfaces:**
 - Consumes: `TemperatureSensorSelector.isGPUTemperatureKey(_:platform:)` from Task 3.
@@ -597,7 +600,20 @@ temperature is still blank. This task replaces the four inlined checks.
 grep -rn 'hasPrefix("Tg")' --include='*.swift' Sources
 ```
 
-Expected: exactly four lines — `SystemMonitor.swift:905`, `SystemMonitor.swift:919`, `FanControlHardware.swift:316`, `FanControlHardware.swift:323`. If the count differs, reconcile before editing.
+Expected: eight lines before editing — two in `SystemMonitor.swift`, two in
+`FanControlHardware.swift`, three in `SelfTest.swift` (a health-check
+predicate, the `--sensors` key predicate, and its GPU component
+classification), and `TemperatureSensorSelector.swift`'s own
+`return key.hasPrefix("Tg")`, which is the classifier's implementation and
+must not be touched. If the count differs, reconcile before editing.
+
+For `SelfTest.swift`'s two key-collection predicates, keep the bare
+`hasPrefix("Tp")`/`hasPrefix("Te")` checks and ADD the classifier calls
+beside them (a strict superset) rather than replacing them — swapping in
+`isCPUTemperatureKey` alone would regress `.unmappedAppleSilicon` machines,
+for which it returns `false`, from "finds Tp/Te keys" to "finds nothing".
+Only the GPU component-classification `hasPrefix("Tg")` (not a key
+predicate) is a straight substitution for `isGPUTemperatureKey`.
 
 - [ ] **Step 2: Update `SystemMonitor`**
 
@@ -669,13 +685,21 @@ to:
             }
 ```
 
+- [ ] **Step 3b: Update `SelfTest.swift`**
+
+Apply the same substitution to the health check's key predicate, the
+`--sensors` key predicate, and its GPU component classification — see Step 1
+for which are additive supersets and which is a straight substitution.
+
 - [ ] **Step 4: Confirm no call site was missed**
 
 ```bash
 grep -rn 'hasPrefix("Tg")' --include='*.swift' Sources
 ```
 
-Expected: no output.
+Expected: one line — `TemperatureSensorSelector.swift`'s own
+`return key.hasPrefix("Tg")` inside `isGPUTemperatureKey`, which is the
+classifier's implementation and is expected to remain.
 
 - [ ] **Step 5: Run the tests**
 
@@ -1754,6 +1778,6 @@ Stage 7 is not derived from the spec: it was added after the spec was written, w
 
 **Placeholder scan.** Every code step carries the literal before-and-after text. Three steps call for judgement, all deliberate and all with an explicit decision rule and stop condition rather than a "TBD": trimming key tables to the dump (Task 3 Step 1) and choosing power keys (Task 5 Step 1), because the spec forbids committing keys the hardware did not confirm; and choosing the fork identity (Task 11 Step 1), which is the user's to make. Task 11's later steps consume that choice through the `FORK_*` variables set there, so its commands stay literal.
 
-**Type consistency.** `CPUTemperaturePlatform.intel` is introduced in Task 3 Step 4 and used with that spelling in Tasks 3 and 4. `isGPUTemperatureKey(_:platform:)` is defined in Task 3 Step 7 and called with that exact signature at all four sites in Task 4. `systemPowerKeys`/`adapterPowerKeys` are renamed from the singular forms in Task 5 Step 2 and consumed under the new names in Step 3. `SystemMonitor` passes `cpuTemperaturePlatform`; `FanControlHardware` passes `temperaturePlatform` — these are the existing property names in each file and are not interchangeable. In Stage 7, `FORK_ID` set in Task 11 Step 1 is the same value consumed by Task 11 Step 6's `git mv` and by Task 12's endpoint work.
+**Type consistency.** `CPUTemperaturePlatform.intel` is introduced in Task 3 Step 4 and used with that spelling in Tasks 3 and 4. `isGPUTemperatureKey(_:platform:)` is defined in Task 3 Step 7 and called with that exact signature at all seven sites in Task 4 (`SystemMonitor.swift` ×2, `FanControlHardware.swift` ×2, `SelfTest.swift` ×3). `systemPowerKeys`/`adapterPowerKeys` are renamed from the singular forms in Task 5 Step 2 and consumed under the new names in Step 3. `SystemMonitor` passes `cpuTemperaturePlatform`; `FanControlHardware` passes `temperaturePlatform` — these are the existing property names in each file and are not interchangeable. In Stage 7, `FORK_ID` set in Task 11 Step 1 is the same value consumed by Task 11 Step 6's `git mv` and by Task 12's endpoint work.
 
 **Known coupling.** Task 11 Step 3 (Team ID) and Task 13 Step 5 (signing) are the same decision seen twice: no Apple Developer Program membership means no real Team ID, which means fan control's XPC authentication cannot be satisfied honestly and the feature ships disabled. Both steps say so; if one changes, change the other.
