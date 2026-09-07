@@ -8,6 +8,13 @@ import Foundation
 /// Semantic Versioning 2.0.0, handling stable and pre-release (beta, rc, alpha) channels.
 enum UpdateServiceSupport {
 
+    /// The GitHub repository this build checks for its own updates. It lives in
+    /// this file, which the test harness compiles, so a test can pin it: aiming
+    /// it at a project that ships a different architecture would hand this build
+    /// an executable it cannot run, and upstream's signature would satisfy the
+    /// installer's verification on the way in.
+    static let updateRepository = "rishabhraaj17/vitals"
+
     static func sha256Matches(_ data: Data, expectedHex: String) -> Bool {
         guard expectedHex.utf8.count == SHA256.byteCount * 2 else { return false }
         let actual = SHA256.hash(data: data)
