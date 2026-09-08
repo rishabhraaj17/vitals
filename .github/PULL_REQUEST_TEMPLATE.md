@@ -35,7 +35,7 @@ different Mac.
 
 ```sh
 ./build.sh                     # must finish without warnings
-./build/Vorssaint --selftest
+./build/Vitals --selftest
 ./build.sh --test
 ```
 

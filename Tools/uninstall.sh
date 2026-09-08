@@ -6,31 +6,29 @@
 # the fan helper daemon, the login item, TCC permissions, preferences, saved
 # state, the app's own data folder and (if present) the password-free
 # closed-lid sudoers rule. Leaves no dead entries behind.
-# Also clears an upstream Vorssaint install if it is still around.
+# A user's upstream Vorssaint install, if present, is deliberately left
+# untouched: it is a separate product from a different developer, not a
+# legacy of this fork.
 set -uo pipefail
 
 BUNDLE="com.rishabhraaj17.vitals"
 APP="/Applications/Vitals.app"
-LEGACY_APP="/Applications/Vorssaint.app"
 
 echo "▸ Quitting…"
 pkill -x Vitals 2>/dev/null || true
-pkill -x Vorssaint 2>/dev/null || true
 sleep 0.5
 
-# Detach from the system from inside whichever bundle still exists: unregisters
+# Detach from the system from inside the bundle if it still exists: unregisters
 # the login item (no BTM tombstone) and restores normal sleep.
 # The fan helper's registration lives in the system, not in the bundle, so
 # deleting the app below cannot reach it. Only the binary can drop it, and the
-# check after the loop settles what its absence or failure left behind.
+# check below settles what its absence or failure left behind.
 detached=1
-for candidate in "$APP/Contents/MacOS/Vitals" "$LEGACY_APP/Contents/MacOS/Vorssaint"; do
-    if [[ -x "$candidate" ]]; then
-        echo "▸ Detaching the fan helper and login item, restoring sleep…"
-        if "$candidate" --uninstall; then detached=0; fi
-        break
-    fi
-done
+candidate="$APP/Contents/MacOS/Vitals"
+if [[ -x "$candidate" ]]; then
+    echo "▸ Detaching the fan helper and login item, restoring sleep…"
+    if "$candidate" --uninstall; then detached=0; fi
+fi
 # `detached` cannot tell a failed unregister from no binary having run, and the
 # second is ordinary: an app trashed by hand, then this script for the rest. It
 # also cannot see a daemon that went despite a reported failure. launchctl
@@ -55,7 +53,7 @@ echo "▸ Resetting permissions (Accessibility, Screen Recording)…"
 tccutil reset All "$BUNDLE" >/dev/null 2>&1 || true
 
 echo "▸ Removing app, preferences, saved state and stored data (clipboard history, shelf files, share links)…"
-rm -rf "$APP" "$LEGACY_APP"
+rm -rf "$APP"
 defaults delete "$BUNDLE" >/dev/null 2>&1 || true
 # The query-learning key is stored separately from preferences. Scope the
 # deletion to this feature's service and account, leaving other items alone.
@@ -75,7 +73,7 @@ rm -rf "$HOME/Library/HTTPStorages/$BUNDLE" "$HOME/Library/HTTPStorages/$BUNDLE.
 # ordinary case, and prints an error over a successful uninstall.
 rm -f "$HOME/Library/Preferences/ByHost/$BUNDLE".*.plist(N)
 
-RULES="/etc/sudoers.d/vitals-clamshell /etc/sudoers.d/vorssaint-clamshell /etc/sudoers.d/vorssaint-utils-clamshell /etc/sudoers.d/vorss-clamshell"
+RULES="/etc/sudoers.d/vitals-clamshell"
 if ls $RULES >/dev/null 2>&1; then
     echo "▸ Removing closed-lid sudoers rule (asks for your admin password)…"
     osascript -e "do shell script \"rm -f $RULES\" with administrator privileges with prompt \"Vitals uninstaller\"" || true
