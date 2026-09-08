@@ -96,10 +96,11 @@ final class PowerSampler {
                 reading.adapterMaxWatts = Double(rated)
             }
 
-            if let capacity = props["CurrentCapacity"] as? Int,
-               let maxCapacity = props["MaxCapacity"] as? Int, maxCapacity > 0 {
-                reading.chargePercent = Int((Double(capacity) / Double(maxCapacity) * 100).rounded())
-            }
+            let uiSoc = (props["BatteryData"] as? [String: Any])?["UISoc"] as? Int
+            reading.chargePercent = BatteryTimeSupport.chargePercent(
+                uiSoc: uiSoc,
+                capacity: props["CurrentCapacity"] as? Int,
+                maxCapacity: props["MaxCapacity"] as? Int)
             if let cycles = props["CycleCount"] as? Int { reading.cycleCount = cycles }
             if let design = batteryInt("DesignCapacity", in: props), design > 0 {
                 // Fallback estimate from IORegistry: a full-charge capacity over

@@ -806,6 +806,19 @@ struct MetricsTests {
         expect(BatteryTimeSupport.formatted(seconds: 30) == "0h 1m",
                "battery time keeps a positive final minute visible")
 
+        expect(BatteryTimeSupport.chargePercent(uiSoc: 100, capacity: 8519, maxCapacity: 8606) == 100,
+               "battery charge prefers UISoc on Intel, matching macOS's 100% over the raw 99% ratio")
+        expect(BatteryTimeSupport.chargePercent(uiSoc: nil, capacity: 8519, maxCapacity: 8606) == 99,
+               "battery charge falls back to the rounded capacity ratio when UISoc is unavailable")
+        expect(BatteryTimeSupport.chargePercent(uiSoc: nil, capacity: 87, maxCapacity: 100) == 87,
+               "battery charge fallback still serves Apple Silicon, where the ratio is already a percentage")
+        expect(BatteryTimeSupport.chargePercent(uiSoc: 255, capacity: 8519, maxCapacity: 8606) == 99,
+               "battery charge ignores an out-of-range UISoc sentinel in favour of the ratio")
+        expect(BatteryTimeSupport.chargePercent(uiSoc: nil, capacity: nil, maxCapacity: nil) == nil,
+               "battery charge returns nil when neither UISoc nor the capacity ratio is usable")
+        expect(BatteryTimeSupport.chargePercent(uiSoc: nil, capacity: 9000, maxCapacity: 8606) == 100,
+               "battery charge clamps a swollen-battery ratio above 100 down to 100")
+
         expect(MetricFormat.systemPowerWatts(measured: 3,
                                              batteryWatts: 10,
                                              externalConnected: true) == 3,
