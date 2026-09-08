@@ -102,6 +102,18 @@ final class FanControlService: ObservableObject {
         case .unavailable:
             error = .helperUnavailable
         case .notRegistered:
+            // This fork has no Apple Developer Program team id (see
+            // FanControlIdentifiers.teamID), so the helper's mutual
+            // code-signing requirement can never be satisfied and the XPC
+            // round-trip that unregistration is gated on can never succeed.
+            // Registering anyway would leave a root LaunchDaemon this app can
+            // never remove, so refuse before entering that trap. If a real
+            // team id is ever set, this check clears and registration
+            // resumes automatically.
+            guard !FanControlIdentifiers.teamID.isEmpty else {
+                error = .helperUnavailable
+                break
+            }
             isWorking = true
             do {
                 try Self.appService.register()
@@ -248,7 +260,10 @@ final class FanControlService: ObservableObject {
     /// macOS may require approval again even when registration succeeds.
     static func restoreRegistrationAfterFailedRemoval() -> Bool {
         let service = appService
-        if service.status == .notRegistered || service.status == .notFound {
+        // Same refusal as the enable path: without a team id the daemon could
+        // never be unregistered again, so it is never registered here either.
+        if !FanControlIdentifiers.teamID.isEmpty,
+           service.status == .notRegistered || service.status == .notFound {
             try? service.register()
         }
         let status = service.status

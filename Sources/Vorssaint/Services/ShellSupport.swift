@@ -125,15 +125,11 @@ enum AdminShell {
 /// The password is asked once, when installing (or removing) the rule.
 enum Sudoers {
     static let rulePath = "/etc/sudoers.d/vitals-clamshell"
-    // Rule files written under earlier names; removed whenever the rule is
-    // (re)installed or removed, so the closed-lid permission migrates without an
-    // extra password prompt. "vorssaint-clamshell" is this fork's own former
-    // path (before the rename to Vitals), kept here so upgraders migrate too.
-    private static let legacyRulePaths = [
-        "/etc/sudoers.d/vorssaint-clamshell",
-        "/etc/sudoers.d/vorssaint-utils-clamshell",
-        "/etc/sudoers.d/vorss-clamshell",
-    ]
+    // This fork has only ever written "vitals-clamshell" — it has no former
+    // path of its own to migrate. Upstream's current rule path
+    // ("vorssaint-clamshell") is deliberately NOT listed here: rm -f'ing it
+    // would delete a co-installed upstream Vorssaint's own working rule.
+    private static let legacyRulePaths: [String] = []
 
     /// Serializes native writes and read/reapply probes. Authorization runs
     /// separately with probes suspended, so a probe cannot resurrect a stale
@@ -157,7 +153,8 @@ enum Sudoers {
         }
     }
 
-    /// Whether any rule file (current or legacy name) is visible on disk.
+    /// Whether the rule file is visible on disk. `legacyRulePaths` is empty
+    /// (see above), so this checks only this fork's own path.
     /// Uninstall offers the removal prompt from this instead of `isConfigured`,
     /// so a rule that stopped working still gets cleaned up.
     static var ruleFilesPresent: Bool {
@@ -169,8 +166,10 @@ enum Sudoers {
         // SSO-enrolled Macs (name@company.com, #915) and the old validation
         // rejected it before the password prompt could even appear.
         let rule = SudoersSupport.clamshellRule(uid: getuid())
-        // Clear any earlier-named rule first, then write and validate the new one
-        // (a failed check rolls back). Same password prompt either way.
+        // Clear any earlier-named rule of this fork's own first (none exist
+        // today, so `legacy` is empty and this is a no-op), then write and
+        // validate the new one (a failed check rolls back). Same password
+        // prompt either way.
         let legacy = legacyRulePaths.joined(separator: " ")
         let command = "mkdir -p /etc/sudoers.d && chmod 0755 /etc/sudoers.d && rm -f \(legacy) && echo '\(rule)' > \(rulePath) && chmod 0440 \(rulePath) && /usr/sbin/visudo -c -f \(rulePath) || { rm -f \(rulePath); exit 1; }"
         AdminShell.run(command, prompt: L10n.shared.s.adminPromptSudoersInstall) { ok in
@@ -179,7 +178,7 @@ enum Sudoers {
     }
 
     static func remove(completion: @escaping (Bool) -> Void) {
-        // Also removes the rules left behind by earlier app names.
+        // legacyRulePaths is empty, so this removes only this fork's own rule.
         let all = ([rulePath] + legacyRulePaths).joined(separator: " ")
         AdminShell.run("rm -f \(all)",
                        prompt: L10n.shared.s.adminPromptSudoersRemove) { ok in
