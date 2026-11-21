@@ -1010,10 +1010,10 @@ enum SettingsFeatureTests {
         let configPath: ([String: String], Bool) -> String = {
             SettingsBackupSupport.configFileURL(environment: $0, home: configHome, isDeveloperBuild: $1).path
         }
-        suite.expect(configPath([:], false) == "/Users/someone/.config/vorssaint/settings.plist",
+        suite.expect(configPath([:], false) == "/Users/someone/.config/vitals/settings.plist",
                "without XDG_CONFIG_HOME the settings file lives in ~/.config")
         suite.expect(configPath(["XDG_CONFIG_HOME": "/Users/someone/dotfiles"], false)
-                == "/Users/someone/dotfiles/vorssaint/settings.plist",
+                == "/Users/someone/dotfiles/vitals/settings.plist",
                "an absolute XDG_CONFIG_HOME holds the settings file")
         suite.expect(configPath(["XDG_CONFIG_HOME": ""], false) == configPath([:], false)
                 && configPath(["XDG_CONFIG_HOME": "dotfiles"], false) == configPath([:], false),

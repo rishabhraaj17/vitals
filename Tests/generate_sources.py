@@ -1275,7 +1275,7 @@ def main():
     write("AppUpdates.swift", "import Foundation\nimport Darwin\nextension AppUpdatesContract {\n"
           + declaration(loader, "final class AppUpdateFeedLoader:")
           + "final class Service {\nlet workQueue = DispatchQueue(label: \"app-updates.contract\")\n"
-          + "let clock = Clock()\nstatic let ownPackageTokens: Set<String> = [\"vorssaint\", \"vitals@beta\", \"vitals-beta\"]\n"
+          + "let clock = Clock()\nstatic let ownPackageTokens: Set<String> = [\"vitals\", \"vitals@beta\", \"vitals-beta\"]\n"
           + "static let onlineCatalogCacheLifetime: TimeInterval = 60 * 60\n"
           + "var onlineCatalogCache: (loadedAt: Foundation.Date, entries: [AppUpdatesSupport.CatalogEntry])?\n"
           + "lazy var catalogSession = URLSession(configuration: URLSessionConfiguration.ephemeral)\n"

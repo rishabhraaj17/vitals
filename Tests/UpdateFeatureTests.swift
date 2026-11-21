@@ -1176,7 +1176,7 @@ enum UpdateFeatureTests {
 
         suite.expect(UpdateServiceSupport.updateRepository == "rishabhraaj17/vitals",
                "the self-update feed points at this fork")
-        suite.expect(!UpdateServiceSupport.updateRepository.contains("vitals"),
+        suite.expect(!UpdateServiceSupport.updateRepository.contains("vorssaint"),
                "the self-update feed never points back at an upstream shipping another architecture")
 
         // Defaults registered
