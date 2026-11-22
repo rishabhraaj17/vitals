@@ -506,12 +506,14 @@ enum DefaultsKey {
     static let monitorAlertCPU = "monitorAlertCPU"
     static let monitorAlertCPUTemperature = "monitorAlertCPUTemperature"
     static let monitorAlertBatteryTemperature = "monitorAlertBatteryTemperature"
+    static let monitorAlertChargingHeat = "monitorAlertChargingHeat"
     static let monitorAlertMemory = "monitorAlertMemory"
     static let monitorAlertDisk = "monitorAlertDisk"
     static let monitorAlertBattery = "monitorAlertBattery"
     static let monitorAlertCPUThreshold = "monitorAlertCPUThreshold"
     static let monitorAlertCPUTemperatureThreshold = "monitorAlertCPUTemperatureThreshold"
     static let monitorAlertBatteryTemperatureThreshold = "monitorAlertBatteryTemperatureThreshold"
+    static let monitorAlertChargingHeatThreshold = "monitorAlertChargingHeatThreshold"
     static let monitorAlertDiskFreePercent = "monitorAlertDiskFreePercent"
     static let monitorAlertBatteryPercent = "monitorAlertBatteryPercent"
     static let monitorAlertCooldownMinutes = "monitorAlertCooldownMinutes"
@@ -1780,12 +1782,14 @@ enum Defaults {
         DefaultsKey.monitorAlertCPU: false,
         DefaultsKey.monitorAlertCPUTemperature: false,
         DefaultsKey.monitorAlertBatteryTemperature: false,
+        DefaultsKey.monitorAlertChargingHeat: false,
         DefaultsKey.monitorAlertMemory: false,
         DefaultsKey.monitorAlertDisk: false,
         DefaultsKey.monitorAlertBattery: false,
         DefaultsKey.monitorAlertCPUThreshold: 90,
         DefaultsKey.monitorAlertCPUTemperatureThreshold: 90,
         DefaultsKey.monitorAlertBatteryTemperatureThreshold: 40,
+        DefaultsKey.monitorAlertChargingHeatThreshold: 38,
         DefaultsKey.monitorAlertDiskFreePercent: 10,
         DefaultsKey.monitorAlertBatteryPercent: 15,
         DefaultsKey.monitorAlertCooldownMinutes: 15,

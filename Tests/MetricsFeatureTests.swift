@@ -644,6 +644,10 @@ enum MetricsFeatureTests {
         expectEqual(String(format: alertStrings.batteryTemperatureBodyFormat,
                            MetricFormat.temperature(40, unit: .fahrenheit)),
                     "Battery reached 104 °F.", "battery temperature alert uses the selected unit")
+        expectEqual(String(format: alertStrings.chargingHeatBodyFormat,
+                           MetricFormat.temperature(38, unit: .celsius)),
+                    "Battery is at 38 °C on the charger. Cool the laptop down, or unplug it.",
+                    "charging heat alert asks to cool the laptop")
         expectEqual(String(format: alertStrings.cpuTemperatureBodyFormat,
                            MetricFormat.temperature(90, unit: .celsius)),
                     "CPU reached 90 °C.", "CPU temperature alert still supports Celsius")
@@ -1125,6 +1129,30 @@ enum MetricsFeatureTests {
                "cooling down restarts the window instead of resuming the old one")
         suite.expect(coolingGate.shouldAlert(reading: 99, threshold: 90, readAt: 345),
                "the restarted window alerts on its own merits")
+
+        // MARK: Hot while charging alert
+
+        suite.expect(ChargingHeatAlertSupport.watchedTemperature(batteryTemperature: 41,
+                                                                 onExternalPower: true) == 41,
+               "a warm battery on the charger is watched")
+        suite.expect(ChargingHeatAlertSupport.watchedTemperature(batteryTemperature: 41,
+                                                                 onExternalPower: false) == nil,
+               "a warm battery off the charger is not this alert's concern")
+        suite.expect(ChargingHeatAlertSupport.watchedTemperature(batteryTemperature: nil,
+                                                                 onExternalPower: true) == nil,
+               "a missing battery temperature never alerts")
+        var unplugGate = SustainedAlertGate()
+        _ = unplugGate.shouldAlert(
+            reading: ChargingHeatAlertSupport.watchedTemperature(batteryTemperature: 41, onExternalPower: true),
+            threshold: 38, readAt: 700)
+        suite.expect(!unplugGate.shouldAlert(
+            reading: ChargingHeatAlertSupport.watchedTemperature(batteryTemperature: 41, onExternalPower: false),
+            threshold: 38, readAt: 715),
+               "unplugging mid-window cancels the charging heat alert")
+        suite.expect(!unplugGate.shouldAlert(
+            reading: ChargingHeatAlertSupport.watchedTemperature(batteryTemperature: 41, onExternalPower: true),
+            threshold: 38, readAt: 720),
+               "plugging back in restarts the window")
 
         var quietGate = SustainedAlertGate()
         suite.expect(!quietGate.shouldAlert(reading: 89, threshold: 90, readAt: 400),

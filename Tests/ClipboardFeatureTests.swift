@@ -1198,6 +1198,11 @@ enum ClipboardFeatureTests {
             expectFormat(alertStrings.batteryBodyFormat, ["d"], "\(language.rawValue) battery alert format")
             expectFormat(alertStrings.batteryTemperatureBodyFormat, ["@"],
                          "\(language.rawValue) battery temperature alert format")
+            expectFormat(alertStrings.chargingHeatBodyFormat, ["@"],
+                         "\(language.rawValue) charging heat alert format")
+            suite.expect(!alertStrings.chargingHeat.isEmpty && !alertStrings.chargingHeatTitle.isEmpty
+                         && alertStrings.chargingHeat != alertStrings.batteryTemperature,
+                         "\(language.rawValue) charging heat alert is localized")
         }
         suite.expect(FeatureStrings.monitorAlerts(.enUS).cooldown == "Repeat the same alert after",
                "English monitor repeat control is explicit")

@@ -13,6 +13,7 @@ final class MonitorAlertService {
     private var cpuUsageGate = SustainedAlertGate()
     private var cpuTemperatureGate = SustainedAlertGate()
     private var batteryTemperatureGate = SustainedAlertGate()
+    private var chargingHeatGate = SustainedAlertGate()
     private var lastSent: [MonitorAlertKind: Date] = [:]
 
     private init() {}
@@ -58,6 +59,7 @@ final class MonitorAlertService {
         cpuUsageGate.reset()
         cpuTemperatureGate.reset()
         batteryTemperatureGate.reset()
+        chargingHeatGate.reset()
     }
 
     private func evaluate(_ snapshot: SystemSnapshot) {
@@ -66,6 +68,7 @@ final class MonitorAlertService {
             cpuUsageGate.reset()
             cpuTemperatureGate.reset()
             batteryTemperatureGate.reset()
+            chargingHeatGate.reset()
             return
         }
         let strings = FeatureStrings.monitorAlerts(L10n.shared.language)
@@ -92,6 +95,12 @@ final class MonitorAlertService {
             evaluateBatteryTemperature(snapshot, defaults: defaults, strings: strings)
         } else {
             batteryTemperatureGate.reset()
+        }
+
+        if alertOn(DefaultsKey.monitorAlertChargingHeat, .monitorPower) {
+            evaluateChargingHeat(snapshot, defaults: defaults, strings: strings)
+        } else {
+            chargingHeatGate.reset()
         }
 
         if alertOn(DefaultsKey.monitorAlertMemory, .monitorMemory),
@@ -186,6 +195,27 @@ final class MonitorAlertService {
                           Self.formattedTemperature(temperature, defaults: defaults)))
     }
 
+    private func evaluateChargingHeat(_ snapshot: SystemSnapshot,
+                                      defaults: UserDefaults,
+                                      strings: MonitorAlertFeatureStrings) {
+        let threshold = Defaults.sanitizedPercent(
+            defaults.integer(forKey: DefaultsKey.monitorAlertChargingHeatThreshold),
+            fallback: ChargingHeatAlertSupport.defaultThreshold,
+            range: ChargingHeatAlertSupport.thresholdRange
+        )
+        let onExternalPower = snapshot.power.map { $0.hasBattery && $0.externalConnected } ?? false
+        let watched = ChargingHeatAlertSupport.watchedTemperature(batteryTemperature: snapshot.batteryTemperature,
+                                                                  onExternalPower: onExternalPower)
+        guard chargingHeatGate.shouldAlert(reading: watched,
+                                           threshold: Double(threshold),
+                                           readAt: snapshot.batteryTemperatureReadAt),
+              let temperature = watched else { return }
+        send(.chargingHeat,
+             title: strings.chargingHeatTitle,
+             body: String(format: strings.chargingHeatBodyFormat,
+                          Self.formattedTemperature(temperature, defaults: defaults)))
+    }
+
     private static func formattedTemperature(_ celsius: Double, defaults: UserDefaults) -> String {
         let unit = TemperatureUnit(rawValue: defaults.string(forKey: DefaultsKey.temperatureUnit) ?? "") ?? .celsius
         return MetricFormat.temperature(celsius, unit: unit)
@@ -205,5 +235,5 @@ final class MonitorAlertService {
 }
 
 private enum MonitorAlertKind: Hashable {
-    case cpu, cpuTemperature, memory, disk, battery, batteryTemperature
+    case cpu, cpuTemperature, memory, disk, battery, batteryTemperature, chargingHeat
 }

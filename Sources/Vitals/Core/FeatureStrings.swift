@@ -345,7 +345,10 @@ extension MonitorAlertFeatureStrings {
         batteryTemperature: "높은 배터리 온도",
         batteryTemperatureThreshold: "온도",
         batteryTemperatureTitle: "배터리 과열",
-        batteryTemperatureBodyFormat: "배터리 온도가 %@에 도달했습니다."
+        batteryTemperatureBodyFormat: "배터리 온도가 %@에 도달했습니다.",
+        chargingHeat: "충전 중 높은 온도",
+        chargingHeatTitle: "충전 중 과열",
+        chargingHeatBodyFormat: "충전 중 배터리가 %@입니다. 노트북을 식히거나 전원을 분리하세요."
     )
 }
 
@@ -2734,6 +2737,9 @@ struct MonitorAlertFeatureStrings {
     let batteryTemperatureThreshold: String
     let batteryTemperatureTitle: String
     let batteryTemperatureBodyFormat: String
+    let chargingHeat: String
+    let chargingHeatTitle: String
+    let chargingHeatBodyFormat: String
 
     static let enUS = MonitorAlertFeatureStrings(
         section: "Alerts",
@@ -2767,7 +2773,10 @@ struct MonitorAlertFeatureStrings {
         batteryTemperature: "High battery temperature",
         batteryTemperatureThreshold: "Temperature above",
         batteryTemperatureTitle: "Hot battery",
-        batteryTemperatureBodyFormat: "Battery reached %@."
+        batteryTemperatureBodyFormat: "Battery reached %@.",
+        chargingHeat: "Hot while charging",
+        chargingHeatTitle: "Hot while charging",
+        chargingHeatBodyFormat: "Battery is at %@ on the charger. Cool the laptop down, or unplug it."
     )
 
     static let ptBR = MonitorAlertFeatureStrings(
@@ -2802,7 +2811,10 @@ struct MonitorAlertFeatureStrings {
         batteryTemperature: "Temperatura alta da bateria",
         batteryTemperatureThreshold: "Temperatura acima de",
         batteryTemperatureTitle: "Bateria quente",
-        batteryTemperatureBodyFormat: "A bateria chegou a %@."
+        batteryTemperatureBodyFormat: "A bateria chegou a %@.",
+        chargingHeat: "Quente ao carregar",
+        chargingHeatTitle: "Quente ao carregar",
+        chargingHeatBodyFormat: "A bateria está a %@ no carregador. Resfrie o notebook ou desconecte-o."
     )
 
     static let tr = MonitorAlertFeatureStrings(
@@ -2837,7 +2849,10 @@ struct MonitorAlertFeatureStrings {
         batteryTemperature: "Yüksek pil sıcaklığı",
         batteryTemperatureThreshold: "Sıcaklık şu değerin üstünde",
         batteryTemperatureTitle: "Pil sıcak",
-        batteryTemperatureBodyFormat: "Pil %@ değerine ulaştı."
+        batteryTemperatureBodyFormat: "Pil %@ değerine ulaştı.",
+        chargingHeat: "Şarj olurken sıcak",
+        chargingHeatTitle: "Şarj olurken sıcak",
+        chargingHeatBodyFormat: "Pil şarjdayken %@. Dizüstü bilgisayarı soğutun veya şarjdan çıkarın."
     )
 
     static let ru = MonitorAlertFeatureStrings(
@@ -2872,7 +2887,10 @@ struct MonitorAlertFeatureStrings {
         batteryTemperature: "Высокая температура батареи",
         batteryTemperatureThreshold: "Температура выше",
         batteryTemperatureTitle: "Батарея перегрета",
-        batteryTemperatureBodyFormat: "Батарея достигла %@."
+        batteryTemperatureBodyFormat: "Батарея достигла %@.",
+        chargingHeat: "Нагрев при зарядке",
+        chargingHeatTitle: "Нагрев при зарядке",
+        chargingHeatBodyFormat: "Батарея на зарядке нагрелась до %@. Охладите ноутбук или отключите его от сети."
     )
 
     static let es = MonitorAlertFeatureStrings(
@@ -2907,7 +2925,10 @@ struct MonitorAlertFeatureStrings {
         batteryTemperature: "Temperatura de la batería alta",
         batteryTemperatureThreshold: "Temperatura por encima de",
         batteryTemperatureTitle: "Batería caliente",
-        batteryTemperatureBodyFormat: "La batería llegó a %@."
+        batteryTemperatureBodyFormat: "La batería llegó a %@.",
+        chargingHeat: "Caliente al cargar",
+        chargingHeatTitle: "Caliente al cargar",
+        chargingHeatBodyFormat: "La batería está a %@ en el cargador. Enfría el portátil o desconéctalo."
     )
 
     static let sk = MonitorAlertFeatureStrings(
@@ -2942,7 +2963,10 @@ struct MonitorAlertFeatureStrings {
         batteryTemperature: "Vysoká teplota batérie",
         batteryTemperatureThreshold: "Teplota nad",
         batteryTemperatureTitle: "Horúca batéria",
-        batteryTemperatureBodyFormat: "Batéria dosiahla %@."
+        batteryTemperatureBodyFormat: "Batéria dosiahla %@.",
+        chargingHeat: "Horúca pri nabíjaní",
+        chargingHeatTitle: "Horúca pri nabíjaní",
+        chargingHeatBodyFormat: "Batéria má pri nabíjaní %@. Ochlaďte notebook alebo ho odpojte."
     )
 
     static let de = MonitorAlertFeatureStrings(
@@ -2977,7 +3001,10 @@ struct MonitorAlertFeatureStrings {
         batteryTemperature: "Hohe Akkutemperatur",
         batteryTemperatureThreshold: "Temperatur über",
         batteryTemperatureTitle: "Heißer Akku",
-        batteryTemperatureBodyFormat: "Der Akku hat %@ erreicht."
+        batteryTemperatureBodyFormat: "Der Akku hat %@ erreicht.",
+        chargingHeat: "Heiß beim Laden",
+        chargingHeatTitle: "Heiß beim Laden",
+        chargingHeatBodyFormat: "Der Akku hat am Ladegerät %@. Kühle das Notebook ab oder trenne es vom Strom."
     )
 
     static let fr = MonitorAlertFeatureStrings(
@@ -3012,7 +3039,10 @@ struct MonitorAlertFeatureStrings {
         batteryTemperature: "Température de la batterie élevée",
         batteryTemperatureThreshold: "Température au-dessus de",
         batteryTemperatureTitle: "Batterie chaude",
-        batteryTemperatureBodyFormat: "La batterie a atteint %@."
+        batteryTemperatureBodyFormat: "La batterie a atteint %@.",
+        chargingHeat: "Chaud pendant la charge",
+        chargingHeatTitle: "Chaud pendant la charge",
+        chargingHeatBodyFormat: "La batterie est à %@ sur le chargeur. Refroidissez l’ordinateur ou débranchez-le."
     )
 
     static let it = MonitorAlertFeatureStrings(
@@ -3047,7 +3077,10 @@ struct MonitorAlertFeatureStrings {
         batteryTemperature: "Temperatura batteria alta",
         batteryTemperatureThreshold: "Temperatura sopra",
         batteryTemperatureTitle: "Batteria calda",
-        batteryTemperatureBodyFormat: "La batteria ha raggiunto %@."
+        batteryTemperatureBodyFormat: "La batteria ha raggiunto %@.",
+        chargingHeat: "Calda durante la ricarica",
+        chargingHeatTitle: "Calda durante la ricarica",
+        chargingHeatBodyFormat: "La batteria è a %@ sotto carica. Raffredda il portatile o scollegalo."
     )
 
     static let ja = MonitorAlertFeatureStrings(
@@ -3082,7 +3115,10 @@ struct MonitorAlertFeatureStrings {
         batteryTemperature: "バッテリー温度が高い",
         batteryTemperatureThreshold: "温度が次を超過",
         batteryTemperatureTitle: "バッテリーが高温",
-        batteryTemperatureBodyFormat: "バッテリーが %@ に達しました。"
+        batteryTemperatureBodyFormat: "バッテリーが %@ に達しました。",
+        chargingHeat: "充電中の高温",
+        chargingHeatTitle: "充電中に高温",
+        chargingHeatBodyFormat: "充電中のバッテリーが %@ です。本体を冷やすか、電源を外してください。"
     )
 
     static let zhHans = MonitorAlertFeatureStrings(
@@ -3117,7 +3153,10 @@ struct MonitorAlertFeatureStrings {
         batteryTemperature: "电池温度过高",
         batteryTemperatureThreshold: "温度高于",
         batteryTemperatureTitle: "电池过热",
-        batteryTemperatureBodyFormat: "电池已达到 %@。"
+        batteryTemperatureBodyFormat: "电池已达到 %@。",
+        chargingHeat: "充电时过热",
+        chargingHeatTitle: "充电时过热",
+        chargingHeatBodyFormat: "电池在充电时达到 %@。请给电脑降温，或拔掉电源。"
     )
 
     static let zhTW = MonitorAlertFeatureStrings(
@@ -3152,7 +3191,10 @@ struct MonitorAlertFeatureStrings {
         batteryTemperature: "電池溫度過高",
         batteryTemperatureThreshold: "溫度高於",
         batteryTemperatureTitle: "電池過熱",
-        batteryTemperatureBodyFormat: "電池已達到 %@。"
+        batteryTemperatureBodyFormat: "電池已達到 %@。",
+        chargingHeat: "充電時過熱",
+        chargingHeatTitle: "充電時過熱",
+        chargingHeatBodyFormat: "電池在充電時達到 %@。請替電腦降溫，或拔掉電源。"
     )
 
     static let zhHK = MonitorAlertFeatureStrings(
@@ -3187,7 +3229,10 @@ struct MonitorAlertFeatureStrings {
         batteryTemperature: "電池溫度過高",
         batteryTemperatureThreshold: "溫度高於",
         batteryTemperatureTitle: "電池過熱",
-        batteryTemperatureBodyFormat: "電池已達到 %@。"
+        batteryTemperatureBodyFormat: "電池已達到 %@。",
+        chargingHeat: "充電時過熱",
+        chargingHeatTitle: "充電時過熱",
+        chargingHeatBodyFormat: "電池在充電時達到 %@。請為電腦降溫，或拔走電源。"
     )
 }
 
@@ -3398,7 +3443,10 @@ extension MonitorAlertFeatureStrings {
         batteryTemperature: "Висока температура акумулятора",
         batteryTemperatureThreshold: "Температура вище",
         batteryTemperatureTitle: "Гарячий акумулятор",
-        batteryTemperatureBodyFormat: "Акумулятор нагрівся до %@."
+        batteryTemperatureBodyFormat: "Акумулятор нагрівся до %@.",
+        chargingHeat: "Нагрів під час заряджання",
+        chargingHeatTitle: "Нагрів під час заряджання",
+        chargingHeatBodyFormat: "Акумулятор на зарядці нагрівся до %@. Охолодіть ноутбук або від’єднайте його від мережі."
     )
 }
 

@@ -564,6 +564,7 @@ extension AppFeature {
             case (.monitorPower, .notifications):
                 return boolFor(DefaultsKey.monitorAlertBattery)
                     || boolFor(DefaultsKey.monitorAlertBatteryTemperature)
+                    || boolFor(DefaultsKey.monitorAlertChargingHeat)
             case (.appUpdates, .notifications):
                 return AppUpdatesSupport.CheckFrequency
                     .sanitized(stringFor(DefaultsKey.appUpdatesCheckFrequency)) != .off
@@ -597,6 +598,7 @@ extension AppFeature {
         (DefaultsKey.monitorAlertCPU, .monitorCPU),
         (DefaultsKey.monitorAlertCPUTemperature, .monitorCPU),
         (DefaultsKey.monitorAlertBatteryTemperature, .monitorPower),
+        (DefaultsKey.monitorAlertChargingHeat, .monitorPower),
         (DefaultsKey.monitorAlertMemory, .monitorMemory),
         (DefaultsKey.monitorAlertDisk, .monitorDisk),
         (DefaultsKey.monitorAlertBattery, .monitorPower),

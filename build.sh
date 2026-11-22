@@ -588,6 +588,7 @@ if (( TEST )); then
         Sources/Vitals/Services/Metrics/MaxCapacityProbe.swift
         Sources/Vitals/Services/Metrics/TemperatureSensorSelector.swift
         Sources/Vitals/Services/Metrics/SustainedAlertGate.swift
+        Sources/Vitals/Services/Metrics/ChargingHeatAlertSupport.swift
         Sources/Vitals/Services/WindowLayout/WindowLayoutSupport.swift
         Sources/Vitals/Services/WindowLayout/WindowStageManagerSupport.swift
         Sources/Vitals/Core/WindowStageManagerStrings.swift

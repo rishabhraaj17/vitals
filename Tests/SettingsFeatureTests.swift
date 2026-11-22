@@ -50,6 +50,7 @@ enum SettingsFeatureTests {
             DefaultsKey.notchLyricsEnabled: true, DefaultsKey.notchShelf: true,
             DefaultsKey.notchClipboardWindow: true, DefaultsKey.monitorAlertDisk: true,
             DefaultsKey.monitorAlertBattery: true, DefaultsKey.monitorAlertBatteryTemperature: true,
+            DefaultsKey.monitorAlertChargingHeat: true,
         ], forName: domain)
 
         func state(battery: Bool = true) -> SettingsSearchState {
@@ -170,6 +171,7 @@ enum SettingsFeatureTests {
             (alerts.batteryTemperature, .monitor, [], [.monitorPower], true),
             // The CPU alert shares this name.
             (alerts.batteryTemperatureThreshold, .monitor, [.monitorCPU], [.monitorPower], true),
+            (alerts.chargingHeat, .monitor, [], [.monitorPower], true),
         ]
         for row in visibility {
             suite.expect(pages(of: row.label, without: row.shownWithout).contains(row.page),

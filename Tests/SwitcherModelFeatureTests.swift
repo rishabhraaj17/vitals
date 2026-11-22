@@ -2713,6 +2713,10 @@ enum SwitcherModelFeatureTests {
                "battery temperature alerts are opt-in")
         suite.expect(registeredDefaults[DefaultsKey.monitorAlertBatteryTemperatureThreshold] as? Int == 40,
                "battery temperature alerts default to forty degrees")
+        suite.expect(registeredDefaults[DefaultsKey.monitorAlertChargingHeat] as? Bool == false,
+               "charging heat alerts are opt-in")
+        suite.expect(registeredDefaults[DefaultsKey.monitorAlertChargingHeatThreshold] as? Int == 38,
+               "charging heat alerts default to thirty-eight degrees")
         suite.expect(Defaults.sanitizedMenuBarMetricSpacing("standard") == "standard",
                "standard menu bar spacing is a valid stored choice")
         suite.expect(Defaults.sanitizedMenuBarMetricSpacing("banana") == "compact",

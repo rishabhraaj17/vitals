@@ -11,12 +11,15 @@ struct MonitorAlertsControls: View {
     @AppStorage(DefaultsKey.monitorAlertCPU) private var alertCPU = false
     @AppStorage(DefaultsKey.monitorAlertCPUTemperature) private var alertCPUTemperature = false
     @AppStorage(DefaultsKey.monitorAlertBatteryTemperature) private var alertBatteryTemperature = false
+    @AppStorage(DefaultsKey.monitorAlertChargingHeat) private var alertChargingHeat = false
     @AppStorage(DefaultsKey.monitorAlertMemory) private var alertMemory = false
     @AppStorage(DefaultsKey.monitorAlertDisk) private var alertDisk = false
     @AppStorage(DefaultsKey.monitorAlertBattery) private var alertBattery = false
     @AppStorage(DefaultsKey.monitorAlertCPUThreshold) private var alertCPUThreshold = 90
     @AppStorage(DefaultsKey.monitorAlertCPUTemperatureThreshold) private var alertCPUTemperatureThreshold = 90
     @AppStorage(DefaultsKey.monitorAlertBatteryTemperatureThreshold) private var alertBatteryTemperatureThreshold = 40
+    @AppStorage(DefaultsKey.monitorAlertChargingHeatThreshold) private var alertChargingHeatThreshold =
+        ChargingHeatAlertSupport.defaultThreshold
     @AppStorage(DefaultsKey.monitorAlertDiskFreePercent) private var alertDiskFreePercent = 10
     @AppStorage(DefaultsKey.monitorAlertBatteryPercent) private var alertBatteryPercent = 15
     @AppStorage(DefaultsKey.monitorAlertCooldownMinutes) private var alertCooldown = 15
@@ -51,12 +54,14 @@ struct MonitorAlertsControls: View {
         .onChange(of: alertCPU) { _, _ in MonitorAlertService.shared.syncWithPreferences(); refreshNotificationStatus() }
         .onChange(of: alertCPUTemperature) { _, _ in MonitorAlertService.shared.syncWithPreferences(); refreshNotificationStatus() }
         .onChange(of: alertBatteryTemperature) { _, _ in MonitorAlertService.shared.syncWithPreferences(); refreshNotificationStatus() }
+        .onChange(of: alertChargingHeat) { _, _ in MonitorAlertService.shared.syncWithPreferences(); refreshNotificationStatus() }
         .onChange(of: alertMemory) { _, _ in MonitorAlertService.shared.syncWithPreferences(); refreshNotificationStatus() }
         .onChange(of: alertDisk) { _, _ in MonitorAlertService.shared.syncWithPreferences(); refreshNotificationStatus() }
         .onChange(of: alertBattery) { _, _ in MonitorAlertService.shared.syncWithPreferences(); refreshNotificationStatus() }
         .onChange(of: alertCPUThreshold) { _, _ in sanitizeAlertValues() }
         .onChange(of: alertCPUTemperatureThreshold) { _, _ in sanitizeAlertValues() }
         .onChange(of: alertBatteryTemperatureThreshold) { _, _ in sanitizeAlertValues() }
+        .onChange(of: alertChargingHeatThreshold) { _, _ in sanitizeAlertValues() }
         .onChange(of: alertDiskFreePercent) { _, _ in sanitizeAlertValues() }
         .onChange(of: alertBatteryPercent) { _, _ in sanitizeAlertValues() }
         .onChange(of: alertCooldown) { _, _ in sanitizeAlertValues() }
@@ -86,6 +91,11 @@ struct MonitorAlertsControls: View {
                                limit: .init(label: text.batteryTemperatureThreshold,
                                             value: $alertBatteryTemperatureThreshold,
                                             range: 30...50, step: 5, formatValue: formattedTemperature))
+                    alertToken(text.chargingHeat, symbol: "battery.100.bolt", isOn: $alertChargingHeat,
+                               limit: .init(label: text.batteryTemperatureThreshold,
+                                            value: $alertChargingHeatThreshold,
+                                            range: ChargingHeatAlertSupport.thresholdRange, step: 1,
+                                            formatValue: formattedTemperature))
                     alertToken(text.battery, symbol: "battery.25percent", isOn: $alertBattery,
                                limit: .init(label: text.batteryThreshold, value: $alertBatteryPercent,
                                             range: 5...50, step: 5, formatValue: { "\($0)%" }))
@@ -185,6 +195,13 @@ struct MonitorAlertsControls: View {
                             in: 30...50,
                             step: 5)
                 }
+                Toggle(text.chargingHeat, isOn: $alertChargingHeat)
+                if alertChargingHeat {
+                    Stepper("\(text.batteryTemperatureThreshold) \(formattedTemperature(alertChargingHeatThreshold))",
+                            value: $alertChargingHeatThreshold,
+                            in: ChargingHeatAlertSupport.thresholdRange,
+                            step: 1)
+                }
                 Toggle(text.battery, isOn: $alertBattery)
                 if alertBattery {
                     Stepper("\(text.batteryThreshold) \(alertBatteryPercent)%",
@@ -213,7 +230,7 @@ struct MonitorAlertsControls: View {
 
     private var anyAlertEnabled: Bool {
         alertCPU || alertCPUTemperature || alertMemory || alertDisk
-            || (PowerSampler.hasInternalBattery && (alertBatteryTemperature || alertBattery))
+            || (PowerSampler.hasInternalBattery && (alertBatteryTemperature || alertChargingHeat || alertBattery))
     }
 
     /// Checked slightly delayed so a just-fired authorization prompt has a
@@ -234,6 +251,9 @@ struct MonitorAlertsControls: View {
         alertBatteryTemperatureThreshold = Defaults.sanitizedPercent(alertBatteryTemperatureThreshold,
                                                                      fallback: 40,
                                                                      range: 30...50)
+        alertChargingHeatThreshold = Defaults.sanitizedPercent(alertChargingHeatThreshold,
+                                                               fallback: ChargingHeatAlertSupport.defaultThreshold,
+                                                               range: ChargingHeatAlertSupport.thresholdRange)
         alertDiskFreePercent = Defaults.sanitizedPercent(alertDiskFreePercent, fallback: 10, range: 5...30)
         alertBatteryPercent = Defaults.sanitizedPercent(alertBatteryPercent, fallback: 15, range: 5...50)
         alertCooldown = Defaults.sanitizedMonitorAlertCooldown(alertCooldown)

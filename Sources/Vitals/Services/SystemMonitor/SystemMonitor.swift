@@ -563,6 +563,8 @@ final class SystemMonitor: ObservableObject {
         let alertCPUTemperature = defaults.bool(forKey: DefaultsKey.monitorAlertCPUTemperature)
         let alertBatteryTemperature = hasInternalBattery
             && defaults.bool(forKey: DefaultsKey.monitorAlertBatteryTemperature)
+        let alertChargingHeat = hasInternalBattery
+            && defaults.bool(forKey: DefaultsKey.monitorAlertChargingHeat)
         let alertMemory = defaults.bool(forKey: DefaultsKey.monitorAlertMemory)
         let alertDisk = defaults.bool(forKey: DefaultsKey.monitorAlertDisk)
         let alertBattery = hasInternalBattery && defaults.bool(forKey: DefaultsKey.monitorAlertBattery)
@@ -583,7 +585,7 @@ final class SystemMonitor: ObservableObject {
             || defaults.bool(forKey: DefaultsKey.menuBarPower)
             || (hasInternalBattery && defaults.bool(forKey: DefaultsKey.menuBarBattery))
             || (hasInternalBattery && defaults.bool(forKey: DefaultsKey.menuBarBatteryTime))
-            || alertBattery
+            || alertBattery || alertChargingHeat
         plan.needPowerDraw = defaults.bool(forKey: DefaultsKey.menuBarPower)
         plan.needPeripheralBattery = menuPanelNeeds.peripheralBattery || notchAccessoryMonitoring
             || (menuPanelNeeds.powerCard && defaults.bool(forKey: DefaultsKey.monitorPwrPeripherals))
@@ -597,7 +599,8 @@ final class SystemMonitor: ObservableObject {
         plan.needBatteryTemperature = hasInternalBattery && (
             (panelNeedsPower && defaults.bool(forKey: DefaultsKey.monitorPwrTemperature))
                 || menuPanelNeeds.batteryTemperature
-                || defaults.bool(forKey: DefaultsKey.menuBarBatteryTemperature) || alertBatteryTemperature)
+                || defaults.bool(forKey: DefaultsKey.menuBarBatteryTemperature) || alertBatteryTemperature
+                || alertChargingHeat)
         if defaults.bool(forKey: AppFeature.fanControl.availabilityKey),
            Self.fanTelemetryAvailable {
             plan.needFanSpeed = fullMonitorVisible || menuPanelNeeds.fanSpeed

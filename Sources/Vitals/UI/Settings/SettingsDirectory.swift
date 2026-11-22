@@ -35,6 +35,7 @@ struct SettingsSearchState: Equatable {
             DefaultsKey.notchCommandBar, DefaultsKey.notchMascotVisits, DefaultsKey.monitorAlertCPU,
             DefaultsKey.monitorAlertCPUTemperature, DefaultsKey.monitorAlertDisk,
             DefaultsKey.monitorAlertBattery, DefaultsKey.monitorAlertBatteryTemperature,
+            DefaultsKey.monitorAlertChargingHeat,
         ].filter { defaults.bool(forKey: $0) })
     }
 
@@ -218,11 +219,13 @@ enum SettingsDirectory {
                 .init([alerts.memory], feature: .monitorMemory),
                 .init([alerts.disk], feature: .monitorDisk),
                 .init([alerts.diskThreshold], feature: .monitorDisk, when: state.on(DefaultsKey.monitorAlertDisk)),
-                .init([alerts.battery, alerts.batteryTemperature], feature: .monitorPower, when: state.hardware.battery),
+                .init([alerts.battery, alerts.batteryTemperature, alerts.chargingHeat], feature: .monitorPower,
+                      when: state.hardware.battery),
                 .init([alerts.batteryThreshold], feature: .monitorPower,
                       when: state.hardware.battery && state.on(DefaultsKey.monitorAlertBattery)),
                 .init([alerts.batteryTemperatureThreshold], feature: .monitorPower,
-                      when: state.hardware.battery && state.on(DefaultsKey.monitorAlertBatteryTemperature)),
+                      when: state.hardware.battery && (state.on(DefaultsKey.monitorAlertBatteryTemperature)
+                                                       || state.on(DefaultsKey.monitorAlertChargingHeat))),
             ]))
         if state.hardware.keyboardLight {
             items.append(SettingsSearchSupport.keyboardBrightnessShortcutItem(language: language))
