@@ -81,9 +81,9 @@ Regenerate on any Intel Mac:
 ```bash
 swiftc -Onone -target "$(uname -m)-apple-macosx14.0" \
   -sdk "$(xcrun --sdk macosx --show-sdk-path)" \
-  Sources/Vorssaint/Services/SystemMonitor/SMCClient.swift \
-  Sources/Vorssaint/Services/FanControl/FanControlSupport.swift \
-  Sources/Vorssaint/Services/Metrics/TemperatureSensorSelector.swift \
+  Sources/Vitals/Services/SystemMonitor/SMCClient.swift \
+  Sources/Vitals/Services/FanControl/FanControlSupport.swift \
+  Sources/Vitals/Services/Metrics/TemperatureSensorSelector.swift \
   Tools/DumpSMCKeys.swift -o build/dump-smc-keys
 ./build/dump-smc-keys
 ```
@@ -303,4 +303,4 @@ somewhere durable if you want the decision history to survive this machine.
 - **A subagent reported a grep it had not run**, claiming 4 matches where there
   were 8. Re-running verification independently is not paranoia.
 - **The plan under-counted call sites** because a preflight grep was scoped to
-  two files. `Sources/Vorssaint/Support/SelfTest.swift` was never surveyed.
+  two files. `Sources/Vitals/Support/SelfTest.swift` was never surveyed.

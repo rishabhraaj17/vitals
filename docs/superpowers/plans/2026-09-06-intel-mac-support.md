@@ -55,10 +55,10 @@ The assistant produces every edit and stops. The user runs `./build.sh --test`, 
 | `Tools/DumpSMCKeys.swift` | Create | Read-only diagnostic. Prints every `T*`/`P*`/`F*` SMC key with type, size, and decoded value. Not part of the app build, but not standalone either — it compiles against `SMCClient.swift`, `FanControlSupport.swift`, and `TemperatureSensorSelector.swift` together. Matches the existing standalone-tool pattern (`Tools/MakeIcon.swift`, `Tools/MakeGIF.swift`) in that it ships outside the app target, not in its dependency footprint. |
 | `docs/superpowers/intel-smc-keys.txt` | Create | Captured output of the above. The evidence Tasks 3 and 5 argue from. |
 | `build.sh:62` | Modify | `TARGET` derived from a `sysctl -n hw.optional.arm64` hardware check instead of hardcoded arm64. Not `uname -m`, which reports the calling process's architecture and would answer x86_64 under Rosetta on an Apple Silicon Mac. |
-| `Sources/Vorssaint/Services/Metrics/TemperatureSensorSelector.swift` | Modify | Add `.intel` platform, Intel CPU core/auxiliary/GPU key tables, and the shared `isGPUTemperatureKey` classifier. All sensor-key policy stays in this one file. |
-| `Sources/Vorssaint/Services/SystemMonitor/SystemMonitor.swift:902-919` | Modify | Route GPU key collection through the new classifier (2 sites). |
-| `Sources/Vorssaint/Services/FanControl/FanControlHardware.swift:313-323` | Modify | Same, for the fan curve's sensor discovery (2 sites). |
-| `Sources/Vorssaint/Services/Metrics/PowerSampler.swift:50-72` | Modify | Resolve power keys from candidate lists. |
+| `Sources/Vitals/Services/Metrics/TemperatureSensorSelector.swift` | Modify | Add `.intel` platform, Intel CPU core/auxiliary/GPU key tables, and the shared `isGPUTemperatureKey` classifier. All sensor-key policy stays in this one file. |
+| `Sources/Vitals/Services/SystemMonitor/SystemMonitor.swift:902-919` | Modify | Route GPU key collection through the new classifier (2 sites). |
+| `Sources/Vitals/Services/FanControl/FanControlHardware.swift:313-323` | Modify | Same, for the fan curve's sensor discovery (2 sites). |
+| `Sources/Vitals/Services/Metrics/PowerSampler.swift:50-72` | Modify | Resolve power keys from candidate lists. |
 | `Tests/MetricsTests.swift` | Modify | New assertions beside the existing platform and display tests (~line 1798 and ~line 1914). |
 
 Everything else in the repo is architecture-neutral and is not touched.
@@ -78,14 +78,14 @@ opens the AppleSMC user client, enumerates keys, and reads them. It never calls
 - Create: `docs/superpowers/intel-smc-keys.txt`
 
 **Interfaces:**
-- Consumes: `SMCClient` from `Sources/Vorssaint/Services/SystemMonitor/SMCClient.swift` — `init?()`, `keys(where: (String) -> Bool) -> [Key]`, `readValue(_ key: Key) -> Double?`, and `Key` with `.name: String`, `.dataSize: UInt32`, `.dataType: String`. `readValue` decodes through `SMCValueCodec`, so `FanControlSupport.swift` and `TemperatureSensorSelector.swift` are also compiled in — see Step 2.
+- Consumes: `SMCClient` from `Sources/Vitals/Services/SystemMonitor/SMCClient.swift` — `init?()`, `keys(where: (String) -> Bool) -> [Key]`, `readValue(_ key: Key) -> Double?`, and `Key` with `.name: String`, `.dataSize: UInt32`, `.dataType: String`. `readValue` decodes through `SMCValueCodec`, so `FanControlSupport.swift` and `TemperatureSensorSelector.swift` are also compiled in — see Step 2.
 - Produces: a tab-separated dump at `docs/superpowers/intel-smc-keys.txt`. Task 3 reads the `T*` rows; Task 5 reads the `P*` rows; Task 7 reads the `F*` rows.
 
 - [ ] **Step 1: Write the dump tool**
 
 Create `Tools/DumpSMCKeys.swift`. It decodes values through `SMCClient.readValue`,
-which calls into `SMCValueCodec` (`Sources/Vorssaint/Services/FanControl/FanControlSupport.swift`),
-which in turn requires `Sources/Vorssaint/Services/Metrics/TemperatureSensorSelector.swift`.
+which calls into `SMCValueCodec` (`Sources/Vitals/Services/FanControl/FanControlSupport.swift`),
+which in turn requires `Sources/Vitals/Services/Metrics/TemperatureSensorSelector.swift`.
 The tool is not standalone: all four files must be passed to `swiftc` together
 (see Step 2). It stays read-only — it never calls `writeValue` or `writeBytes`.
 
@@ -137,9 +137,9 @@ struct DumpSMCKeys {
 mkdir -p build
 swiftc -Onone -target "$(uname -m)-apple-macosx14.0" \
   -sdk "$(xcrun --sdk macosx --show-sdk-path)" \
-  Sources/Vorssaint/Services/SystemMonitor/SMCClient.swift \
-  Sources/Vorssaint/Services/FanControl/FanControlSupport.swift \
-  Sources/Vorssaint/Services/Metrics/TemperatureSensorSelector.swift \
+  Sources/Vitals/Services/SystemMonitor/SMCClient.swift \
+  Sources/Vitals/Services/FanControl/FanControlSupport.swift \
+  Sources/Vitals/Services/Metrics/TemperatureSensorSelector.swift \
   Tools/DumpSMCKeys.swift \
   -o build/dump-smc-keys
 ```
@@ -290,7 +290,7 @@ git commit -m "chore(build): derive the swift target from the host architecture"
 ## Task 3: Intel CPU and GPU temperature key selection
 
 **Files:**
-- Modify: `Sources/Vorssaint/Services/Metrics/TemperatureSensorSelector.swift`
+- Modify: `Sources/Vitals/Services/Metrics/TemperatureSensorSelector.swift`
 - Test: `Tests/MetricsTests.swift` (insert near line 1798 and near line 1914)
 
 **Interfaces:**
@@ -587,7 +587,7 @@ stop and fix rather than adjusting the old assertion.
 - [ ] **Step 9: Commit**
 
 ```bash
-git add Sources/Vorssaint/Services/Metrics/TemperatureSensorSelector.swift Tests/MetricsTests.swift
+git add Sources/Vitals/Services/Metrics/TemperatureSensorSelector.swift Tests/MetricsTests.swift
 git commit -m "feat(metrics): map intel cpu and gpu temperature sensors"
 ```
 
@@ -601,9 +601,9 @@ call site: two in `SystemMonitor`, two in `FanControlHardware`, and three
 more in `SelfTest.swift` that the original count missed.
 
 **Files:**
-- Modify: `Sources/Vorssaint/Services/SystemMonitor/SystemMonitor.swift:902-919`
-- Modify: `Sources/Vorssaint/Services/FanControl/FanControlHardware.swift:313-323`
-- Modify: `Sources/Vorssaint/Support/SelfTest.swift` (health check, `--sensors` key collection, and its component classification)
+- Modify: `Sources/Vitals/Services/SystemMonitor/SystemMonitor.swift:902-919`
+- Modify: `Sources/Vitals/Services/FanControl/FanControlHardware.swift:313-323`
+- Modify: `Sources/Vitals/Support/SelfTest.swift` (health check, `--sensors` key collection, and its component classification)
 
 **Interfaces:**
 - Consumes: `TemperatureSensorSelector.isGPUTemperatureKey(_:platform:)` from Task 3.
@@ -755,8 +755,8 @@ number that never moves means a stale cache, not a live sensor.
 - [ ] **Step 8: Commit**
 
 ```bash
-git add Sources/Vorssaint/Services/SystemMonitor/SystemMonitor.swift \
-        Sources/Vorssaint/Services/FanControl/FanControlHardware.swift
+git add Sources/Vitals/Services/SystemMonitor/SystemMonitor.swift \
+        Sources/Vitals/Services/FanControl/FanControlHardware.swift
 git commit -m "fix(metrics): collect gpu sensors through the shared platform classifier"
 ```
 
@@ -773,7 +773,7 @@ they may be absent, in which case the gauge stays blank — correct behaviour, b
 worth improving if the dump shows usable keys.
 
 **Files:**
-- Modify: `Sources/Vorssaint/Services/Metrics/PowerSampler.swift:50-72`
+- Modify: `Sources/Vitals/Services/Metrics/PowerSampler.swift:50-72`
 
 **Interfaces:**
 - Consumes: the `P*` rows of `docs/superpowers/intel-smc-keys.txt` from Task 1.
@@ -867,7 +867,7 @@ and battery flow should go negative. Replug: it returns.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add Sources/Vorssaint/Services/Metrics/PowerSampler.swift
+git add Sources/Vitals/Services/Metrics/PowerSampler.swift
 git commit -m "fix(metrics): resolve power sensors from a candidate key list"
 ```
 
@@ -1063,7 +1063,7 @@ this task verifies the write path and the watchdog.
 
 ```bash
 grep -n "restoreReason\|heartbeatLimit\|verificationFailureLimit\|temperatureFailureLimit" \
-  Sources/Vorssaint/Services/FanControl/FanControlSupport.swift
+  Sources/Vitals/Services/FanControl/FanControlSupport.swift
 ```
 
 Read `restoreReason` and confirm it still restores on time limit, heartbeat loss,
@@ -1317,16 +1317,16 @@ open build/Vorssaint.app
 ## Sensors on a different Intel Mac
 
 The CPU and GPU temperature key tables in
-`Sources/Vorssaint/Services/Metrics/TemperatureSensorSelector.swift` were built
+`Sources/Vitals/Services/Metrics/TemperatureSensorSelector.swift` were built
 from one machine. If temperatures read blank or wrong on yours, dump your own
 SMC keys and adjust:
 
 ```bash
 swiftc -Onone -target "$(uname -m)-apple-macosx14.0" \
   -sdk "$(xcrun --sdk macosx --show-sdk-path)" \
-  Sources/Vorssaint/Services/SystemMonitor/SMCClient.swift \
-  Sources/Vorssaint/Services/FanControl/FanControlSupport.swift \
-  Sources/Vorssaint/Services/Metrics/TemperatureSensorSelector.swift \
+  Sources/Vitals/Services/SystemMonitor/SMCClient.swift \
+  Sources/Vitals/Services/FanControl/FanControlSupport.swift \
+  Sources/Vitals/Services/Metrics/TemperatureSensorSelector.swift \
   Tools/DumpSMCKeys.swift -o build/dump-smc-keys
 ./build/dump-smc-keys
 ```
@@ -1430,12 +1430,12 @@ part: it is compiled into behaviour, not just displayed.
 
 **Files:**
 - Modify: `build.sh:43-52,64`
-- Modify: `Sources/Vorssaint/Core/AppInfo.swift:8-14`
-- Modify: `Sources/Vorssaint/Services/FanControl/FanControlXPC.swift:7-12`
-- Modify: `Sources/Vorssaint/Services/Update/UpdateInstallerSupport.swift:66,116`
-- Modify: `Sources/Vorssaint/Services/Cleaner/CleanerSupport.swift` (`isProtectedBundleID`)
-- Modify: `Sources/Vorssaint/Services/DockClick/DockClickSupport.swift:31-35`
-- Modify: `Sources/Vorssaint/Services/QuickTools/ScreenshotSharingSupport.swift:43`
+- Modify: `Sources/Vitals/Core/AppInfo.swift:8-14`
+- Modify: `Sources/Vitals/Services/FanControl/FanControlXPC.swift:7-12`
+- Modify: `Sources/Vitals/Services/Update/UpdateInstallerSupport.swift:66,116`
+- Modify: `Sources/Vitals/Services/Cleaner/CleanerSupport.swift` (`isProtectedBundleID`)
+- Modify: `Sources/Vitals/Services/DockClick/DockClickSupport.swift:31-35`
+- Modify: `Sources/Vitals/Services/QuickTools/ScreenshotSharingSupport.swift:43`
 - Rename: `Resources/com.vorssaint.utils.fan-control.plist`
 - Modify: `Tests/MetricsTests.swift` (12 assertions pin the old identifiers)
 
@@ -1602,11 +1602,11 @@ they did not choose. This is the sharpest item in Stage 7 and the easiest to
 overlook, because nothing about it fails visibly.
 
 **Files:**
-- Modify: `Sources/Vorssaint/Services/Feedback/FeedbackService.swift:61`
-- Modify: `Sources/Vorssaint/Services/QuickTools/ScreenshotSharingSupport.swift:42`
-- Modify: `Sources/Vorssaint/Services/Recorder/RecordingSharingSupport.swift:48`
-- Modify: `Sources/Vorssaint/Services/Update/UpdateService.swift:30`
-- Modify: `Sources/Vorssaint/Services/Update/UpdateShowcaseMedia.swift:13`
+- Modify: `Sources/Vitals/Services/Feedback/FeedbackService.swift:61`
+- Modify: `Sources/Vitals/Services/QuickTools/ScreenshotSharingSupport.swift:42`
+- Modify: `Sources/Vitals/Services/Recorder/RecordingSharingSupport.swift:48`
+- Modify: `Sources/Vitals/Services/Update/UpdateService.swift:30`
+- Modify: `Sources/Vitals/Services/Update/UpdateShowcaseMedia.swift:13`
 
 **Interfaces:**
 - Consumes: the new bundle ID from Task 11.

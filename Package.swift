@@ -28,7 +28,7 @@ let package = Package(
         .executableTarget(
             name: "Vorssaint",
             dependencies: ["VMStatisticsCompat", "HIDEventSystem", "CoreAudioTapCompat", "RecorderGIFCodec"],
-            path: "Sources/Vorssaint"
+            path: "Sources/Vitals"
         )
     ]
 )

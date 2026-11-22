@@ -197,7 +197,7 @@ enum FeatureCatalogTests {
         // 2s window made the gesture impossible for anyone pressing Escape
         // slower than once per two seconds (#697).
         let cleaningSource = (try? String(
-            contentsOfFile: "Sources/Vorssaint/Services/CleaningMode/CleaningModeManager.swift",
+            contentsOfFile: "Sources/Vitals/Services/CleaningMode/CleaningModeManager.swift",
             encoding: .utf8)) ?? ""
         let cleaningCode = cleaningSource
             .components(separatedBy: "\n")
@@ -553,7 +553,7 @@ enum FeatureCatalogTests {
         } else {
             suite.expect(false, "feature install defaults suite can be created")
         }
-        let runtimeSource = (try? String(contentsOfFile: "Sources/Vorssaint/App/FeatureRuntime.swift",
+        let runtimeSource = (try? String(contentsOfFile: "Sources/Vitals/App/FeatureRuntime.swift",
                                          encoding: .utf8)) ?? ""
         suite.expect(runtimeSource.contains(
             "setAvailable(AppFeature.allCases, available, enablingFirstInstalls: false)"),
@@ -682,7 +682,7 @@ enum FeatureCatalogTests {
         }
         suite.expect(SettingsBackupSupport.exportKeys().contains(DefaultsKey.featureHubKeptFeatures),
                "features someone chose to keep travel in backups, so a restored Mac never offers them again")
-        let hubUndoSource = (try? String(contentsOfFile: "Sources/Vorssaint/UI/Settings/FeatureHubSettings.swift",
+        let hubUndoSource = (try? String(contentsOfFile: "Sources/Vitals/UI/Settings/FeatureHubSettings.swift",
                                          encoding: .utf8)) ?? ""
         suite.expect(hubUndoSource.contains("setAvailable(batch, true, enablingFirstInstalls: false)"),
                "undoing the offer reinstalls without switching on what was never on")
@@ -716,7 +716,7 @@ enum FeatureCatalogTests {
             "appManagement", "calendar",
         ], "permission portal contains every supported permission")
         let onboardingViewSource = (try? String(
-            contentsOfFile: "Sources/Vorssaint/UI/Onboarding/OnboardingView.swift",
+            contentsOfFile: "Sources/Vitals/UI/Onboarding/OnboardingView.swift",
             encoding: .utf8)) ?? ""
         suite.expect(onboardingViewSource.contains("let features = Set(AppFeature.allCases.filter(\\.isAvailable))")
                 && onboardingViewSource.contains("_selectedFeatures = State(initialValue: features)"),
@@ -760,10 +760,10 @@ enum FeatureCatalogTests {
                "no first-run preset installs a feature whose hardware the Mac may lack")
 
         let featureHubSource = (try? String(
-            contentsOfFile: "Sources/Vorssaint/UI/Settings/FeatureHubSettings.swift",
+            contentsOfFile: "Sources/Vitals/UI/Settings/FeatureHubSettings.swift",
             encoding: .utf8)) ?? ""
         let onboardingFeatureSource = (try? String(
-            contentsOfFile: "Sources/Vorssaint/UI/Onboarding/OnboardingView.swift",
+            contentsOfFile: "Sources/Vitals/UI/Onboarding/OnboardingView.swift",
             encoding: .utf8)) ?? ""
         suite.expect(featureHubSource.contains("installBlockedReason")
                 && onboardingFeatureSource.contains("installBlockedReason"),
@@ -803,7 +803,7 @@ enum FeatureCatalogTests {
         // check: it keeps the eager stack and the preview above the scroll
         // view, not the scrolling itself.
         let monitorSettingsSource = (try? String(
-            contentsOfFile: "Sources/Vorssaint/UI/Settings/MonitorSettings.swift",
+            contentsOfFile: "Sources/Vitals/UI/Settings/MonitorSettings.swift",
             encoding: .utf8)) ?? ""
         let compactMonitorBody = compactMember("var body: some View {", in: monitorSettingsSource)
         let monitorPreviewAboveScroll: Bool = {
@@ -2528,7 +2528,7 @@ enum FeatureCatalogTests {
         // AppKit reached from below the line would be a main thread violation
         // on every hotplug, wake and panel open.
         let brightnessSource = (try? String(
-            contentsOfFile: "Sources/Vorssaint/Services/Display/BrightnessService.swift",
+            contentsOfFile: "Sources/Vitals/Services/Display/BrightnessService.swift",
             encoding: .utf8)) ?? ""
         let brightnessWorkQueueHalf = brightnessSource
             .components(separatedBy: "// MARK: - Rebuild (work queue)").last ?? ""
@@ -2737,8 +2737,8 @@ enum FeatureCatalogTests {
                 && !SettingsBackupSupport.exportKeys().contains(
                     DefaultsKey.brightnessExtendedDimmingPaths),
                "the per-monitor extended dimming choice stays on this Mac")
-        for surface in ["Sources/Vorssaint/UI/Settings/EnergySettings.swift",
-                        "Sources/Vorssaint/UI/MenuPanel/BrightnessSection.swift"] {
+        for surface in ["Sources/Vitals/UI/Settings/EnergySettings.swift",
+                        "Sources/Vitals/UI/MenuPanel/BrightnessSection.swift"] {
             let source = (try? String(contentsOfFile: surface, encoding: .utf8)) ?? ""
             suite.expect(source.contains("SoftwareDimmingButton(display: display"),
                    "\(surface) offers the software dimming choice on its display rows")

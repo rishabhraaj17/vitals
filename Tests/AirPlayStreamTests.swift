@@ -731,7 +731,7 @@ enum AirPlayIdleContract {
         // listed, so a Vitals that never offers AirPlay never creates the
         // manager.
         let mixerCode = (try? String(
-            contentsOfFile: "Sources/Vorssaint/Services/Audio/AppVolumeMixer.swift",
+            contentsOfFile: "Sources/Vitals/Services/Audio/AppVolumeMixer.swift",
             encoding: .utf8)) ?? ""
         let reconcile = mixerCode.range(of: "private func reconcileEngines(with apps: [MixerApp]) {")
             .flatMap { start in

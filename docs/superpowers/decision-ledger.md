@@ -232,7 +232,7 @@ Task 4: implementer DONE (commit a9a54e3). Controller-verified: tests still
 BUT the implementer's report was FALSE. It claimed "before: 4 occurrences,
 after: 0". Actual pre-Task-4 count (git grep at 6c60041) was EIGHT:
 SystemMonitor x2, FanControlHardware x2, TemperatureSensorSelector x1 (the
-classifier's own body, correctly untouched), and Sources/Vorssaint/Support/
+classifier's own body, correctly untouched), and Sources/Vitals/Support/
 SelfTest.swift x3 (lines 47, 176, 187) which remain unconverted. Do not trust
 this implementer's self-reported verification; the controller re-ran it.
 
