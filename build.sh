@@ -950,18 +950,9 @@ fi
 if (( INSTALL )); then
     echo "▸ Installing into /Applications…"
     stop_process "$EXECUTABLE"
-    # Only an official install replaces the pre-rename official apps. The
-    # Developer variant must coexist with them just as it does with Vitals.
-    if (( ! DEV )); then
-        for legacy in "Vorss:Vorss" "Vorssaint Utils:VorssaintUtils"; do
-            name="${legacy%%:*}"; proc="${legacy##*:}"
-            if [[ -d "/Applications/$name.app" ]]; then
-                stop_process "$proc"
-                rm -rf "/Applications/$name.app"
-                echo "  (legacy $name.app removed)"
-            fi
-        done
-    fi
+    # No legacy cleanup. Upstream used this slot to replace its own pre-rename
+    # apps (Vorss.app, Vorssaint Utils.app). For this fork those are a different
+    # vendor's live installs, not our past self, so we never stop or remove them.
     INSTALL_DEST="/Applications/$APP_NAME.app"
     rm -rf "$INSTALL_DEST"
     ditto --noextattr --noqtn "$STAGE" "$INSTALL_DEST"

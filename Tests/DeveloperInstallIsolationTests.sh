@@ -24,7 +24,7 @@ sign_installed_bundle() { signed+=("$1"); }
 for DEV in 1 0; do
     stopped=()
     signed=()
-    for name in Vorss 'Vorssaint Utils' Vitals 'Vitals (Developer)'; do
+    for name in Vorss 'Vorssaint Utils' Vorssaint Vitals 'Vitals (Developer)'; do
         mkdir -p "$install_test_dir/Applications/$name.app"
         print original > "$install_test_dir/Applications/$name.app/content"
     done
@@ -40,14 +40,16 @@ for DEV in 1 0; do
     [[ "${signed[*]}" == "$install_test_dir/Applications/$APP_NAME.app" ]]
     if (( DEV )); then
         [[ "${stopped[*]}" == VitalsDeveloper ]]
-        for name in Vorss 'Vorssaint Utils' Vitals; do
+        for name in Vorss 'Vorssaint Utils' Vorssaint Vitals; do
             [[ "$(cat "$install_test_dir/Applications/$name.app/content")" == original ]]
         done
     else
-        [[ "${stopped[*]}" == 'Vitals Vorss VorssaintUtils' ]]
-        [[ ! -e "$install_test_dir/Applications/Vorss.app" ]]
-        [[ ! -e "$install_test_dir/Applications/Vorssaint Utils.app" ]]
-        [[ "$(cat "$install_test_dir/Applications/Vitals (Developer).app/content")" == original ]]
+        # Vorss, Vorssaint Utils and Vorssaint are upstream's apps: a different
+        # vendor's product, never this fork's past self. Never stop or remove them.
+        [[ "${stopped[*]}" == Vitals ]]
+        for name in Vorss 'Vorssaint Utils' Vorssaint 'Vitals (Developer)'; do
+            [[ "$(cat "$install_test_dir/Applications/$name.app/content")" == original ]]
+        done
     fi
 done
 print 'DEVELOPER INSTALL ISOLATION TESTS OK'

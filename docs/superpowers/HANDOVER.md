@@ -166,6 +166,12 @@ remembering because it is easy to repeat.
   closed-lid mode in Vitals would have silently broken it in a co-installed
   Vorssaint. `legacyRulePaths` is now empty — this fork has only ever written
   `vitals-clamshell`.
+- **`build.sh --install`** (found 2026-11-22, present since the fork began)
+  stopped and `rm -rf`'d `/Applications/Vorss.app` and `Vorssaint Utils.app`,
+  upstream's pre-rename names. Same mistake, third instance. The loop is gone and
+  `Tests/DeveloperInstallIsolationTests.sh` now asserts all three upstream names
+  (incl. `Vorssaint.app`) survive both installs. `BundleMigration.swift` looks
+  similar but is safe: it only trashes a bundle carrying *our* bundle id.
 
 The codebase already encoded the right instinct in
 `CleanerSupport.isProtectedBundleID` and `DockClickSupport.isOwnBundleIdentifier`,
